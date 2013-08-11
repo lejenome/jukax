@@ -167,7 +167,7 @@ var accountUpdatePassword = function(old_pw, new_pw, fn) {
     }
 };
 
-var eventsCleanup = new function(fn) {
+var eventsCleanup = function(fn) {
     data.delete({
         success: function() {
             data = user.bucketWithName("data").createObject();
@@ -199,4 +199,27 @@ var eventsCleanup = new function(fn) {
                 fn.failure({type: 11, message: errorString});
             }
         }});
+};
+
+
+var jukax = window.jukax = {
+    user: user,
+    data: data,
+    bucket: bucket,
+    ERROR_SAVING_DATA: ERROR_SAVING_DATA,
+    ERROR_CREATING_USER: ERROR_CREATING_USER,
+    ERROR_QUERY_FAILURE: ERROR_QUERY_FAILURE,
+    ERROR_LOGIN: ERROR_LOGIN,
+    ERROR_REFRESHING_DATA: ERROR_REFRESHING_DATA,
+    ERROR_DELETING_USER: ERROR_DELETING_USER,
+    ERROR_UNVALID_INPUT: ERROR_UNVALID_INPUT,
+    ERROR_UPDATING_PASSWORD: ERROR_UPDATING_PASSWORD,
+    ERROR_CLEANINGUP_EVENTS: ERROR_CLEANINGUP_EVENTS,
+    initialize: initialize,
+    accountCreate: accountCreate,
+    accountLogin: accountLogin,
+    accountLogout: accountLogout,
+    accountUpdatePassword: accountUpdatePassword,
+    accountDelete: accountDelete,
+    eventsCleanup: eventsCleanup
 };
