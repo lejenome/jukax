@@ -6,15 +6,17 @@ $(function() {
         var password = $("#password").val();
         try {
             jukax.accountCreate(username, password, {
-                success:function() {
+                success: function() {
                     buildCal(year, month);
                     $.mobile.changePage("#cal");
                     $.mobile.hidePageLoadingMsg();
                 },
-                failure: function(o) {
+                failure: function(e) {
                     $.mobile.hidePageLoadingMsg();
-                    if (o.type==jukax.ERROR_CREATING_USER) {alert("Unable to register: " + o.message);}
-            }});
+                    if (e.type == jukax.ERROR_CREATING_USER) {
+                        alert("Unable to register: " + e.message);
+                    }
+                }});
         } catch (e) {
             $.mobile.hidePageLoadingMsg();
             alert("Unable to register: " + e.message);
@@ -26,34 +28,17 @@ $(function() {
         $.mobile.showPageLoadingMsg();
         var username = $("#username").val();
         var password = $("#password").val();
-        jukax.accountLogin(username, password, {success:, failure});
-        KiiUser.authenticate(username, password, {
-            success: function(Auser) {
-                _.user = Auser;
-                _.bucket = _.user.bucketWithName("data");
-                var query = KiiQuery.queryWithClause();
-                var queryCallbacks = {
-                    success: function(queryPerformed, r, nextQuery) {
-                        r[0].refresh({success: function(obj) {
-                                _.data = obj;
-                                if (_.data.get("data") == undefined) {
-                                    _.data.set("data", {});
-                                }
-                                _.data.save({ success:_.login_next(obj) });
-                            }});
-                    },
-                    failure: function(queryPerformed, anErrorString) {
-                        console.log("query failure");
-                    }
-                };
-                _.bucket.executeQuery(query, queryCallbacks);
-            },
-            failure: function(theUser, anErrorString) {
+        jukax.accountLogin(username, password, {success:
+                    function() {
+                        buildCal(year, month);
+                        $.mobile.changePage("#cal");
+                        $.mobile.hidePageLoadingMsg();
+                    }, failure: function(e) {
                 $.mobile.hidePageLoadingMsg();
-                alert("Unable to register: " + anErrorString);
-                Kii.logger("Unable to register user: " + anErrorString);
-            }
-        });
+                if (e.type == jukax.ERROR_LOGIN) {
+                    alert("Unable to login: " + e.message);
+                }
+            }});
 
     }
     ;
