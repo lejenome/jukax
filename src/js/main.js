@@ -42,20 +42,90 @@ $(function() {
 
     }
     ;
-    Kii.initializeWithSite("ea716d13", "60ac553a1539a79cf9f44a98642be971", KiiSite.US);
 
+    jukax.initialize("ea716d13", "60ac553a1539a79cf9f44a98642be971", KiiSite.US);
+
+    //Click Events
     $("#register-button").click(performRegistration);
     $("#login-button").click(performLogin);
+    $("#logout").click(jukax.accountDelete({success: function() {
+            $.mobile.changePage("#login");
+        }}));
+    $("#logout2").click(jukax.accountDelete({success: function() {
+            $.mobile.changePage("#login");
+        }}));
+    $("#deleteaccountbutton").click(jukax.accountDelete({success: function() {
+            $.mobile.changePage("#login");
+        }}));
+    $("#updatepasswordbutton").click(function() {
+        try {
+            jukax.accountUpdatePassword(
+                    $("#updatepasswordnew").val(),
+                    $("#updatepasswordold").val(),
+                    {success: function() {
+                            $("#updatepasswordmessage").text("Done!").css("color", "gree").show();
+                            setTimeout(function() {
+                                $("#updatepasswordmessage").hide();
+                            }, 3000);
+                        }, failure: function(e) {
+                            if (e.type == jukax.ERROR_UNVALID_INPUT) {
+                                alert(e.message);
+                            } else if (e.type == jukax.ERROR_UPDATING_PASSWORD) {
+                                $("#updatepasswordmessage").text("Failed!").css("color", "red").show();
+                                setTimeout(function() {
+                                    $("#updatepasswordmessage").hide();
+                                }, 3000);
+                            } else {
+                                $("#updatepasswordmessage").text("Relogin needed!").css("color", "yellow").show();
+                                setTimeout(function() {
+                                    $("#updatepasswordmessage").hide();
+                                    $.mobile.changePage("#login");
+                                }, 3000);
+                            }
+                        }});
+        }
+        catch (e) {
+            $("#updatepasswordmessage").text("Failed!").css("color", "red").show();
+            setTimeout(function() {
+                $("#updatepasswordmessage").hide();
+            }, 3000);
+        }
+        ;
+        $("#updatepasswordnew").val("");
+        $("#updatepasswordold").val("")
+    });
+    $("#deletedatabutton").click(jukax.eventsCleanup({
+        success: function() {
+            buildCal(year, month);
+            $("#deletedatamessage").text("Done!").css("color", "gree").show();
+            setTimeout(function() {
+                $("#deletedatamessage").hide();
+            }, 3000);
+        },
+        failure: function(e) {
+            if (e.type == jukax.ERROR_CLEANINGUP_EVENTS) {
+                $("#deletedatamessage").text("Failed!").css("color", "red").show();
+                setTimeout(function() {
+                    $("#deletedatamessage").hide();
+                }, 3000);
+            } else {
+                $("#deletedatamessage").text("Relogin needed!").css("color", "yellow").show();
+                setTimeout(function() {
+                    $("#deletedatamessage").hide();
+                    $.mobile.changePage("#login");
+                }, 3000);
+            }
+        }}));
+
+
+
+
+
     $("#prevMonth").click(_.prevMonth);
     $("#nextMonth").click(_.nextMonth);
     _.newb.click(_.newEvent);
-    $("#logout").click(_.logout);
-    $("#logout2").click(_.logout);
     $("#save").click(_.saveEvent);
     $("#gotoEvents").click(_.buildeventsList);
-    $("#deletedatabutton").click(_.deleteData);
-    $("#updatepasswordbutton").click(_.updatePassword);
-    $("#deleteaccountbutton").click(_.deleteAccount);
 //$("#cal-container").niceScroll();
 
 
