@@ -36,7 +36,6 @@ var accountCreate = function(username, password, fn) {
                                 if ("failure" in fn) {
                                     fn.failure({type: 7, message: error});
                                 }
-                                ;
                             }});
                     },
                     failure: function(theObject, errorString) {
@@ -69,7 +68,7 @@ var accountLogin = function(username, password, fn) {
                     r[0].refresh({
                         success: function(obj) {
                             data = obj;
-                            if (data.get("data") == undefined) {
+                            if (typeof data.get("data") === 'undefined') {
                                 data.set("data", {});
                             }
                             data.save({
@@ -135,26 +134,15 @@ var accountDelete = function(fn) {
 
 var accountUpdatePassword = function(old_pw, new_pw, fn) {
     try {
+        var name = user.getUsername();
         if (old_pw != "" && old_pw != null && new_pw != "" && new_pw != null) {
             user.updatePassword(old_pw, new_pw, {
                 success: function(u) {
-                    user = u;
-                    user.refresh({
-                        success: function(u) {
-                            user = u;
-                            if ("success" in fn) {
-                                fn.success();
-                            }
-                        },
-                        failure: function(u, e) {
-                            if ("failure" in fn) {
-                                fn.failure({type: 7, message: e});
-                            }
-                        }});
+                    accountLogin(name, new_pw, fn);
                 },
                 failure: function(user, errorString) {
                     if ("failure" in fn) {
-                        fn.failure({type: 10, message: e});
+                        fn.failure({type: 10, message: errorString});
                     }
                 }});
         } else {
@@ -201,10 +189,109 @@ var eventsCleanup = function(fn) {
         }});
 };
 
+var eventsNew = eventsUpdate = function(YMD, event) {//YMD : Year+Month+Day String
+    var eventIndex = -1;
+    var _event = {};
+    if (!(YMD in data.get("data"))) {
+        data.get("data")[YMD] = [];
+    }
+    if ("created" in event || event.created == null) {
+        //eventIndex=-1;
+        event.created = new Date().getTime();
+    } else {
+        for (var j = 0; j < data.get("data")[YMD].length; j++) {
+            if (data.get("data")[YMD][j].created == event.created) {
+                eventIndex = j;
+                break;
+            }
+        }
+    }
+    _event.title = "title" in event ? event.title : "Note";
+    _event.where = "where" in event ? event.where : "";
+    _event.note = "note" in event ? event.note : "";
+    _event.time = "time" in event ? event.time : "";
+    _event.repeat = "repeat" in event ? event.repeat : "once";
+    _event.reminder = "reminder" in event ? event.reminder : "no";
+    _event.level = "level" in event ? event.level : "A";
+    _event.created = event.created;
+
+    if (eventIndex > -1) {
+        data.get("data")[YMD][eventIndex] = _event;
+    } else {
+        data.get("data")[YMD].push(_event);
+        data.get("data")[YMD].sort(function(a, b) {
+            return parseInt(a.time.split(":").join("")) - parseInt(b.time.split(":").join(""));
+        });
+    }
+    data.save({
+        success: function(obj) {
+            data = obj;
+            //....?????
+        }, failure: function() {
+            //....?????    
+        }});
+};
+
+var eventsDelete = function(YMD, created) {
+    if (!(YMD in data.get("data"))) {
+        return;
+    }
+    var eventIndex = -1;
+    for (var j = 0; j < data.get("data")[YMD].length; j++) {
+        if (data.get("data")[YMD][j].created == created) {
+            eventIndex = j;
+            break;
+        }
+    }
+    if (eventIndex == -1) {
+        return;
+    }
+    data.get("data")[YMD].splice(eventIndex, 1);
+    data.save({
+        success: function(obj) {
+            data = obj;
+            //.....??????
+        }, failure: function() {
+            //.....??????
+        }});
+};
+
+var eventsObject = function() {
+    return {title: "", where: "", note: "", time: "", repeat: "once", reminder: "no", level: "A", created: new Date().getTime()};
+};
+
+var eventsGet = function(YMD, created) {
+    if (!(YMD in data.get("data"))) {
+        return null;
+    }
+    if (created !== undefined) {
+        var eventIndex = -1;
+        for (var j = 0; j < data.get("data")[YMD].length; j++) {
+            if (data.get("data")[YMD][j].created == created) {
+                eventIndex = j;
+                break;
+            }
+        }
+        if (eventIndex > -1) {
+            return data.get("data")[YMD][eventIndex];
+        }
+        else {
+            return null;
+        }
+    }
+    return data.get("data")[YMD];
+};
+
+var dataGet = function() {
+    return data;
+};
+var userGet = function() {
+    return user;
+};
 
 var jukax = window.jukax = {
-    user: user,
-    data: data,
+    userGet: userGet,
+    dataGet: dataGet,
     bucket: bucket,
     ERROR_SAVING_DATA: ERROR_SAVING_DATA,
     ERROR_CREATING_USER: ERROR_CREATING_USER,
@@ -221,5 +308,10 @@ var jukax = window.jukax = {
     accountLogout: accountLogout,
     accountUpdatePassword: accountUpdatePassword,
     accountDelete: accountDelete,
-    eventsCleanup: eventsCleanup
+    eventsCleanup: eventsCleanup,
+    eventsNew: eventsNew,
+    eventsUpdate: eventsUpdate,
+    eventsDelete: eventsDelete,
+    eventsObject: eventsObject,
+    eventsGet: eventsGet
 };
