@@ -192,15 +192,16 @@ var eventsCleanup = function(fn) {
 var eventsNew = eventsUpdate = function(YMD, event) {//YMD : Year+Month+Day String
     var eventIndex = -1;
     var _event = {};
-    if (!(YMD in data.get("data"))) {
-        data.get("data")[YMD] = [];
+    var eventsData= data.get("data");
+    if (!(YMD in eventsData)) {
+        eventsData[YMD] = [];
     }
     if ("created" in event || event.created == null) {
         //eventIndex=-1;
         event.created = new Date().getTime();
     } else {
-        for (var j = 0; j < data.get("data")[YMD].length; j++) {
-            if (data.get("data")[YMD][j].created == event.created) {
+        for (var j = 0; j < eventsData[YMD].length; j++) {
+            if (eventsData[YMD][j].created == event.created) {
                 eventIndex = j;
                 break;
             }
@@ -214,15 +215,16 @@ var eventsNew = eventsUpdate = function(YMD, event) {//YMD : Year+Month+Day Stri
     _event.reminder = "reminder" in event ? event.reminder : "no";
     _event.level = "level" in event ? event.level : "A";
     _event.created = event.created;
-
+    
     if (eventIndex > -1) {
-        data.get("data")[YMD][eventIndex] = _event;
+        eventsData[YMD][eventIndex] = _event;
     } else {
-        data.get("data")[YMD].push(_event);
-        data.get("data")[YMD].sort(function(a, b) {
+        eventsData[YMD].push(_event);
+        eventsData[YMD].sort(function(a, b) {
             return parseInt(a.time.split(":").join("")) - parseInt(b.time.split(":").join(""));
         });
     }
+    data.set("data",eventsData);
     data.save({
         success: function(obj) {
             data = obj;

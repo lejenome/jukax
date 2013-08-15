@@ -7,7 +7,7 @@ $(function() {
     if (month.length == 1) {
         month = "0" + month;
     }
-
+    var lastPage="#cal";//last page cal or events
     var form = {title: $("#title"), where: $("#where"), note: $("#note"), time: $("#time"),
         repeat: "once", reminder: "no", level: $("#level-A"), created: null};
 
@@ -50,13 +50,13 @@ $(function() {
         buildCal(year, month);
     };
 
-//Updating the list of events with selected day events
+//Updating the list of events on the selected day
     var updateListview = function() {
         $.mobile.showPageLoadingMsg();
         listview.empty();
         var YMD = year + month + day;
         var events = jukax.eventsGet(YMD);
-        if (events) {
+        if (events != null) {
             for (var i = 0; i < events.length; i++) {
                 var row = $("<li></li>");
                 var link = $("<a></a>").click(function() {
@@ -115,7 +115,7 @@ $(function() {
         return td;
     };
 
-//DONE
+//Building the calendar on a given Month
     var buildCal = function(year, month) {
         this.year = year;
         this.month = month;
@@ -189,11 +189,20 @@ $(function() {
     };
 
 //DONE
+    
+    var getHM = function(){//get Hours:Minutes String
+        var time=new Date();
+        var hours = time.getHours().toString();
+        var minutes = time.getMinutes().toString();
+        if (hours.length ==1){hours="0"+hours;}
+        if (minutes.length == 1){minutes="0"+minutes;}
+        return hours+":"+minutes;
+    }
     var newEvent = function() {
         form.title.val("");
         form.where.val("");
         form.note.val("");
-        form.time.val("");
+        form.time.val(getHM());
         form.level = $("#level-radio :radio").attr("checked", false).closest("#level-radio").find("#level-A").val();
         form.created = null;
         $("#delete").hide();
@@ -203,16 +212,18 @@ $(function() {
 
 //DONE
     var saveEvent = function() {
-        jukax.eventsUpdate(year + month + day, form);
+        var event = {title: form.title.val(), where: form.where.val(), note: form.note.val(), time: form.time.val(),
+            repeat: "once", reminder: "no", level: $("#level-radio input:checked").val(), created: form.createdd};
+        jukax.eventsUpdate(year + month + day, event);
         updateListview();
-        $.mobile.changePage("#cal");
+        $.mobile.changePage(lastPage);
     };
 
 //DONE
     var deleteEvent = function(i, t) {
         jukax.eventsDelete(YMD, created);
         updateListview();
-        $.mobile.changePage("#cal");
+        $.mobile.changePage(lastPage);
     };
 
 //DONE
@@ -231,7 +242,7 @@ $(function() {
             for (var i = 0; i < events.length; i++) {
                 var row = $("<li></li>");
                 var link = $("<a></a>").click(function() {
-                    editEvent($(this).data("created"), date);
+                    editEvent($(this).data("created"), $(this).data("date"));
                 });
                 if (events[i].level == "C") {
                     row.data("theme", "b");
@@ -243,6 +254,7 @@ $(function() {
                     row.data("theme", "d");
                 }
                 $(link).data("created", events[i].created);
+                $(link).data("date", date);
                 $(link).append("<h3>" + events[i].title + "<small>  (" + events[i].where + ")</small></h3>");
                 $(link).append("<p>" + events[i].note + "</p>");
                 $(link).append($("<p></p>").attr("class", "ui-li-aside").text(events[i].time));
@@ -251,6 +263,7 @@ $(function() {
             }
         }
         $.mobile.changePage("#events");
+        lastPage="#events"
         evlist.listview("refresh");
         $.mobile.hidePageLoadingMsg();
     }
@@ -326,6 +339,8 @@ $(function() {
                 success: function() {
                     buildCal(year, month);
                     $.mobile.changePage("#cal");
+        $("#username").val("");
+        $("#password").val("");
                     $.mobile.hidePageLoadingMsg();
                 },
                 failure: function(e) {
@@ -349,6 +364,8 @@ $(function() {
                     function() {
                         buildCal(year, month);
                         $.mobile.changePage("#cal");
+        $("#username").val("");
+        $("#password").val("");
                         $.mobile.hidePageLoadingMsg();
                     }, failure: function(e) {
                 $.mobile.hidePageLoadingMsg();
@@ -365,25 +382,26 @@ $(function() {
     $("#register-button").click(performRegistration);
     $("#login-button").click(performLogin);
     $("#logout").click(function() {
-        jukax.accountLogout({success: function() {
-                $.mobile.changePage("#login");
-            }})
+        jukax.accountLogout();
+        $.mobile.changePage("#login");
     });
     $("#logout2").click(function() {
-        jukax.accountLogout({success: function() {
-                $.mobile.changePage("#login");
-            }})
+        jukax.accountLogout();
+        $.mobile.changePage("#login");   
     });
     $("#deleteaccountbutton").click(function() {
-        jukax.accountDelete({success: function() {
+        jukax.accountLogout({success: function() {
                 $.mobile.changePage("#login");
-            }})
+            },
+                            failure:function(){
+                            $.mobile.loadPage("#login");
+                            }});
     });
     $("#updatepasswordbutton").click(function() {
         try {
             jukax.accountUpdatePassword(
-                    $("#updatepasswordnew").val(),
                     $("#updatepasswordold").val(),
+                $("#updatepasswordnew").val(),
                     {success: function() {
                             $("#updatepasswordmessage").text("Done!").css("color", "gree").show();
                             setTimeout(function() {
@@ -440,6 +458,10 @@ $(function() {
                 }
             }})
     });
+    $("#gotoCal").click(function(){
+        lastPage="#cal";
+        $.mobile.changePage("#cal");
+    });
 
 
 
@@ -450,6 +472,9 @@ $(function() {
     newb.click(newEvent);
     $("#save").click(saveEvent);
     $("#gotoEvents").click(buildeventsList);
+    $("#backbutton").click(function(){
+        $.mobile.changePage(lastPage);
+    });
     /*$("#cal-container").niceScroll();
      */
 
