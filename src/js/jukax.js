@@ -235,12 +235,13 @@ var eventsNew = eventsUpdate = function(YMD, event) {//YMD : Year+Month+Day Stri
 };
 
 var eventsDelete = function(YMD, created) {
-    if (!(YMD in data.get("data"))) {
+    var eventsData = data.get("data");
+    if (!(YMD in eventsData)) {
         return;
     }
     var eventIndex = -1;
-    for (var j = 0; j < data.get("data")[YMD].length; j++) {
-        if (data.get("data")[YMD][j].created == created) {
+    for (var j = 0; j < eventsData[YMD].length; j++) {
+        if (eventsData[YMD][j].created == created) {
             eventIndex = j;
             break;
         }
@@ -248,8 +249,10 @@ var eventsDelete = function(YMD, created) {
     if (eventIndex == -1) {
         return;
     }
-    data.get("data")[YMD].splice(eventIndex, 1);
-    data.save({
+    eventsData[YMD].splice(eventIndex, 1);
+    if(eventsData[YMD].length==0){delete eventsData[YMD];}
+    data.set("data",eventsData);
+    data.saveAllFields({
         success: function(obj) {
             data = obj;
             //.....??????

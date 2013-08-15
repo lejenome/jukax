@@ -181,7 +181,7 @@ $(function() {
             form.level = $("#level-radio :radio").attr("checked", false).closest("#level-radio").find("#level-" + e.level).attr("checked", true);
             form.created = e.created;
             $("#delete").click(function() {
-                deleteEvent(i, t);
+                deleteEvent(created, YMD);
             });
             $("#delete").show();
             $.mobile.changePage("#eventPage");
@@ -220,9 +220,10 @@ $(function() {
     };
 
 //DONE
-    var deleteEvent = function(i, t) {
+    var deleteEvent = function(created, YMD) {
         jukax.eventsDelete(YMD, created);
         updateListview();
+        buildeventsList();
         $.mobile.changePage(lastPage);
     };
 
@@ -390,11 +391,20 @@ $(function() {
         $.mobile.changePage("#login");   
     });
     $("#deleteaccountbutton").click(function() {
-        jukax.accountLogout({success: function() {
-                $.mobile.changePage("#login");
+        jukax.accountDelete({success: function() {
+            $("#deleteaccountmessage").text("Done!").css("color", "gree").show();
+                            setTimeout(function() {
+                                $("#deleteaccountmessage").hide();
+                                $.mobile.changePage("#login");
+                            }, 2000);
             },
                             failure:function(){
-                            $.mobile.loadPage("#login");
+                                $("#deleteaccountmessage").text("Failed!").css("color", "red").show();
+                                setTimeout(function() {
+                                    $("#deleteaccountmessage").hide();
+                                    $.mobile.loadPage("#login");
+                                }, 3000);
+                            
                             }});
     });
     $("#updatepasswordbutton").click(function() {
@@ -475,7 +485,7 @@ $(function() {
     $("#backbutton").click(function(){
         $.mobile.changePage(lastPage);
     });
-    /*$("#cal-container").niceScroll();
-     */
+    $("#cal").niceScroll();
+     $("#events").niceScroll();
 
 });
