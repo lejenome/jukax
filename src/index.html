@@ -111,7 +111,7 @@
         <div id="eventPage" data-role="page" data-theme="c">
             <!-- header -->
             <div data-role="header" data-theme="c" data-position="fixed">
-                <a href="#cal" data-icon="arrow-l">Back</a>
+                <a id="backbutton" href="#" data-icon="arrow-l">Back</a>
                 <h3>Event</h3>
 
                 <div data-role="controlgroup" data-type="horizontal" class="ui-btn-right">
@@ -188,7 +188,7 @@
             <div data-role="panel" data-position-fixed="true" data-theme="a"  id="nav-panel2">
                 <ul data-role="listview" data-theme="a" class="nav-search">
                     <li data-icon="delete"><a href="#cal" data-rel="close">Close menu</a></li>
-                    <li><a href="#cal">Calendar</a></li>
+                    <li><a id="gotoCal" href="#">Calendar</a></li>
                     <li><a href="#settings" data-rel="dialog" data-transition="slidedown">Settings</a></li>
                     <li><a href="#" id="logout2">Logout</a></li>
                 </ul>
