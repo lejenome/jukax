@@ -54,28 +54,3 @@ width:100%;
 #cal-container>table  td.today:hover {
     background-position: 81px -81px;
 }
-.nav-search .ui-btn-up-a {
-    background-image: none;
-    background-color: #333;
-}
-.nav-search .ui-btn-inner {
-    border-top: 1px solid #888;
-    border-color: rgba(255, 255, 255, .1);
-}
-.nav-search .ui-btn.ui-first-child {
-    border-top-width: 0;
-    background: #111;
-}
-#monthField, #monthFiels .ui-btn-text{
-    padding: 6px 11px;
-    text-align: center;
-    font-size: 12.5px;
-    font-family: Helvetica,Arial,sans-serif;
-}
-#monthField .ui-btn-inner{
-padding:0px;
-}
-#new.ui-mini{
-    left:50%;
-    margin-right:22px;
-}
