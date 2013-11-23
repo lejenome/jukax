@@ -9,97 +9,108 @@ var ERROR_UNVALID_INPUT = 9;
 var ERROR_UPDATING_PASSWORD = 10;
 var ERROR_CLEANINGUP_EVENTS = 11;
 
-var initialize = function(appID, appKey, kii_site) {
+"use strict";
+/*jslint plusplus: true */ //disable var++ errors on JSLint
+
+var initialize = function (appID, appKey, kii_site) {
     kii_site = typeof kii_site !== 'undefined' ? kii_site : KiiSite.US;
     Kii.initializeWithSite(appID, appKey, kii_site);
 };
 
-var accountCreate = function(username, password, fn) {
+var accountCreate = function (username, password, fn) {
     fn = typeof fn !== 'undefined' ? fn : {};
     try {
         user = KiiUser.userWithUsername(username, password);
         user.register({
-            success: function(Auser) {
+            success: function (Auser) {
                 bucket = Auser.bucketWithName("data");
                 data = bucket.createObject();
                 data.set("data", {});
                 data.saveAllFields({
-                    success: function(theObject) {
+                    success: function (theObject) {
                         theObject.refresh({
-                            success: function(obj) {
+                            success: function (obj) {
                                 data = obj;
-                                if ("success" in fn) {
+                                if (fn.hasOwnProperty("success")) {
                                     fn.success();
                                 }
                             },
-                            failure: function(obj, error) {
-                                if ("failure" in fn) {
+                            failure: function (obj, error) {
+                                if (fn.hasOwnProperty("failure")) {
                                     fn.failure({type: 7, message: error});
                                 }
-                            }});
+                            }
+                        }
+                                         );
                     },
-                    failure: function(theObject, errorString) {
-                        if ("failure" in fn) {
+                    failure: function (theObject, errorString) {
+                        if (fn.hasOwnProperty("failure")) {
                             fn.failure({type: 3, message: errorString});
                         }
                     }
-                });
+                }
+                                  );
             },
-            failure: function(theUser, errorString) {
-                if ("failure" in fn) {
+            failure: function (theUser, errorString) {
+                if (fn.hasOwnProperty("failure")) {
                     fn.failure({type: 4, message: errorString});
                 }
             }
-        });
+        }
+                     );
     } catch (e) {
         throw e.message;
     }
 };
 
-var accountLogin = function(username, password, fn) {
+var accountLogin = function (username, password, fn) {
     fn = typeof fn !== 'undefined' ? fn : {};
     KiiUser.authenticate(username, password, {
-        success: function(Auser) {
+        success: function (Auser) {
             user = Auser;
             bucket = user.bucketWithName("data");
-            var query = KiiQuery.queryWithClause();
-            var queryCallbacks = {
-                success: function(queryPerformed, r, nextQuery) {
-                    r[0].refresh({
-                        success: function(obj) {
-                            data = obj;
-                            if (typeof data.get("data") === 'undefined') {
-                                data.set("data", {});
-                            }
-                            data.save({
-                                success: function(obj) {
-                                    data = obj;
-                                    if ("success" in fn) {
-                                        fn.success();
+            var query = KiiQuery.queryWithClause(),
+                queryCallbacks = {
+                    success: function (queryPerformed, r, nextQuery) {
+                        r[0].refresh({
+                            success: function (obj) {
+                                data = obj;
+                                if (typeof data.get("data") === 'undefined') {
+                                    data.set("data", {});
+                                }
+                                data.save({
+                                    success: function (obj) {
+                                        data = obj;
+                                        if (fn.hasOwnProperty("success")) {
+                                            fn.success();
+                                        }
+                                    },
+                                    failure: function (obj, errorString) {
+                                        if (fn.hasOwnProperty("failure")) {
+                                            fn.failure({type: 3, message: errorString});
+                                        }
                                     }
-                                },
-                                failure: function(obj, errorString) {
-                                    if ("failure" in fn) {
-                                        fn.failure({type: 3, message: errorString});
-                                    }
-                                }});
-                        },
-                        failure: function(obj, errorString) {
-                            if ("failure" in fn) {
-                                fn.failure({type: 7, message: errorString});
+                                }
+                                         );
+                            },
+                            failure: function (obj, errorString) {
+                                if (fn.hasOwnProperty("failure")) {
+                                    fn.failure({type: 7, message: errorString});
+                                }
                             }
-                        }});
-                },
-                failure: function(queryPerformed, errorString) {
-                    if ("failure" in fn) {
-                        fn.failure({type: 5, message: errorString});
+                        }
+                                    );
+                    },
+                    failure: function (queryPerformed, errorString) {
+                        if (fn.hasOwnProperty("failure")) {
+                            fn.failure({type: 5, message: errorString});
+                        }
                     }
-                }
-            };
+                };
             bucket.executeQuery(query, queryCallbacks);
         },
-        failure: function(theUser, errorString) {
-            if ("failure" in fn) {
+        failure: function (theUser, errorString) {
+            if (fn.hasOwnProperty("failure")) {
                 fn.failure({type: 6, message: errorString});
             }
         }
@@ -107,190 +118,210 @@ var accountLogin = function(username, password, fn) {
 
 };
 
-var accountLogout = function() {
+var accountLogout = function () {
     data.save({
-        success: function() {
+        success: function () {
             KiiUser.logOut();
         },
-        failure: function() {
+        failure: function () {
             KiiUser.logOut();
-        }});
+        }
+    }
+             );
 };
 
-var accountDelete = function(fn) {
+var accountDelete = function (fn) {
     fn = typeof fn !== 'undefined' ? fn : {};
     user.delete({
-        success: function() {
-            if ("success" in fn) {
+        success: function () {
+            if (fn.hasOwnProperty("success")) {
                 fn.success();
             }
         },
-        failure: function(user, errorString) {
-            if ("failure" in fn) {
+        failure: function (user, errorString) {
+            if (fn.hasOwnProperty("failure")) {
                 fn.failure({type: 8, message: errorString});
             }
-        }});
+        }
+    }
+               );
 };
 
-var accountUpdatePassword = function(old_pw, new_pw, fn) {
+var accountUpdatePassword = function (old_pw, new_pw, fn) {
     try {
         var name = user.getUsername();
-        if (old_pw != "" && old_pw != null && new_pw != "" && new_pw != null) {
+        if (old_pw !== "" && old_pw !== null && new_pw !== "" && new_pw !== null) {
             user.updatePassword(old_pw, new_pw, {
-                success: function(u) {
+                success: function (u) {
                     accountLogin(name, new_pw, fn);
                 },
-                failure: function(user, errorString) {
-                    if ("failure" in fn) {
+                failure: function (user, errorString) {
+                    if (fn.hasOwnProperty("failure")) {
                         fn.failure({type: 10, message: errorString});
                     }
-                }});
+                }
+            }
+                               );
         } else {
-            if ("failure" in fn) {
+            if (fn.hasOwnProperty("failure")) {
                 fn.failure({type: 9, message: "Unvalid Input"});
             }
         }
     } catch (e) {
-        throw e.message
+        throw e.message;
     }
 };
 
-var eventsCleanup = function(fn) {
+var eventsCleanup = function (fn) {
     data.delete({
-        success: function() {
+        success: function () {
             data = user.bucketWithName("data").createObject();
             data.set("data", {});
             data.save({
-                success: function(o) {
+                success: function (o) {
                     data = o;
                     data.refresh({
-                        success: function(d) {
-                            data = d
-                            if ("success" in fn) {
+                        success: function (d) {
+                            data = d;
+                            if (fn.hasOwnProperty("success")) {
                                 fn.success();
                             }
                         },
-                        failure: function(obj, errorString) {
-                            if ("failure" in fn) {
+                        failure: function (obj, errorString) {
+                            if (fn.hasOwnProperty("failure")) {
                                 fn.failure({type: 7, message: errorString});
                             }
-                        }});
+                        }
+                    }
+                                );
                 },
-                failure: function(obj, errorString) {
-                    if ("failure" in fn) {
+                failure: function (obj, errorString) {
+                    if (fn.hasOwnProperty("failure")) {
                         fn.failure({type: 3, message: errorString});
                     }
-                }});
+                }
+            }
+                     );
         },
-        failure: function(obj, errorString) {
-            if ("failure" in fn) {
+        failure: function (obj, errorString) {
+            if (fn.hasOwnProperty("failure")) {
                 fn.failure({type: 11, message: errorString});
             }
-        }});
+        }
+    }
+               );
 };
-
-var eventsNew = eventsUpdate = function(YMD, event) {//YMD : Year+Month+Day String
-    var eventIndex = -1;
-    var _event = {};
-    var eventsData= data.get("data");
-    if (!(YMD in eventsData)) {
+var eventsNew, eventsUpdate;
+eventsNew = eventsUpdate = function (YMD, event) {//YMD : Year+Month+Day String
+    var eventIndex = -1,
+        CurrentEvent = {},
+        eventsData = data.get("data"),
+        j;
+    if (!eventsData.hasOwnProperty(YMD)) {
         eventsData[YMD] = [];
     }
-    if ("created" in event || event.created == null) {
+    if (event.hasOwnProperty("created") || event.created === null) {
         //eventIndex=-1;
         event.created = new Date().getTime();
     } else {
-        for (var j = 0; j < eventsData[YMD].length; j++) {
-            if (eventsData[YMD][j].created == event.created) {
+        for (j = 0; j < eventsData[YMD].length; j++) {
+            if (eventsData[YMD][j].created === event.created) {
                 eventIndex = j;
                 break;
             }
         }
     }
-    _event.title = "title" in event ? event.title : "Note";
-    _event.where = "where" in event ? event.where : "";
-    _event.note = "note" in event ? event.note : "";
-    _event.time = "time" in event ? event.time : "";
-    _event.repeat = "repeat" in event ? event.repeat : "once";
-    _event.reminder = "reminder" in event ? event.reminder : "no";
-    _event.level = "level" in event ? event.level : "A";
-    _event.created = event.created;
-    
+    CurrentEvent.title = event.hasOwnProperty("title") ? event.title : "Note";
+    CurrentEvent.where = event.hasOwnProperty("where") ? event.where : "";
+    CurrentEvent.note = event.hasOwnProperty("note") ? event.note : "";
+    CurrentEvent.time = event.hasOwnProperty("time") ? event.time : "";
+    CurrentEvent.repeat = event.hasOwnProperty("repeat") ? event.repeat : "once";
+    CurrentEvent.reminder = event.hasOwnProperty("reminder") ? event.reminder : "no";
+    CurrentEvent.level = event.hasOwnProperty("level") ? event.level : "A";
+    CurrentEvent.created = event.created;
+
     if (eventIndex > -1) {
-        eventsData[YMD][eventIndex] = _event;
+        eventsData[YMD][eventIndex] = CurrentEvent;
     } else {
-        eventsData[YMD].push(_event);
-        eventsData[YMD].sort(function(a, b) {
-            return parseInt(a.time.split(":").join("")) - parseInt(b.time.split(":").join(""));
+        eventsData[YMD].push(CurrentEvent);
+        eventsData[YMD].sort(function (a, b) {
+            return parseInt(a.time.split(":").join(""), 10) - parseInt(b.time.split(":").join(""), 10);
         });
     }
-    data.set("data",eventsData);
+    data.set("data", eventsData);
     data.save({
-        success: function(obj) {
+        success: function (obj) {
             data = obj;
             //....?????
-        }, failure: function() {
-            //....?????    
-        }});
+        },
+        failure: function () {
+            //....????:w?
+        }
+    }
+             );
 };
 
-var eventsDelete = function(YMD, created) {
-    var eventsData = data.get("data");
-    if (!(YMD in eventsData)) {
+var eventsDelete = function (YMD, created) {
+    var eventsData = data.get("data"),
+        eventIndex = -1,
+        j;
+    if (!eventsData.hasOwnProperty(YMD)) {
         return;
     }
-    var eventIndex = -1;
-    for (var j = 0; j < eventsData[YMD].length; j++) {
-        if (eventsData[YMD][j].created == created) {
+    for (j = 0; j < eventsData[YMD].length; j++) {
+        if (eventsData[YMD][j].created === created) {
             eventIndex = j;
             break;
         }
     }
-    if (eventIndex == -1) {
+    if (eventIndex === -1) {
         return;
     }
     eventsData[YMD].splice(eventIndex, 1);
-    if(eventsData[YMD].length==0){delete eventsData[YMD];}
-    data.set("data",eventsData);
+    if (eventsData[YMD].length === 0) {delete eventsData[YMD]; }
+    data.set("data", eventsData);
     data.saveAllFields({
-        success: function(obj) {
+        success: function (obj) {
             data = obj;
             //.....??????
-        }, failure: function() {
+        },
+        failure: function () {
             //.....??????
-        }});
+        }
+    }
+                      );
 };
 
-var eventsObject = function() {
+var eventsObject = function () {
     return {title: "", where: "", note: "", time: "", repeat: "once", reminder: "no", level: "A", created: new Date().getTime()};
 };
 
-var eventsGet = function(YMD, created) {
-    if (!(YMD in data.get("data"))) {
+var eventsGet = function (YMD, created) {
+    if (!data.get("data").hasOwnProperty(YMD)) {
         return null;
     }
     if (created !== undefined) {
-        var eventIndex = -1;
-        for (var j = 0; j < data.get("data")[YMD].length; j++) {
-            if (data.get("data")[YMD][j].created == created) {
+        var eventIndex = -1,
+            j;
+        for (j = 0; j < data.get("data")[YMD].length; j++) {
+            if (data.get("data")[YMD][j].created === created) {
                 eventIndex = j;
                 break;
             }
         }
         if (eventIndex > -1) {
             return data.get("data")[YMD][eventIndex];
-        }
-        else {
+        } else {
             return null;
         }
     }
     return data.get("data")[YMD];
 };
 
-var dataGet = function() {
+var dataGet = function () {
     return data;
 };
-var userGet = function() {
+var userGet = function () {
     return user;
 };
 

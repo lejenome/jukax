@@ -1,74 +1,69 @@
-$(function() {
-
+$(function () {
+    "use strict";
+    /*jslint plusplus: true */ //disable var++ errors on JSLint
+    
     /*var user, data, bucket;*/
-    var monthField = $("#monthField"), listview = $("#listview"), newb = $("#new");
-    var date = new Date();
-    var year = date.getFullYear().toString(), month = (date.getMonth() + 1).toString(), day = date.getDate().toString();
-    if (month.length == 1) {
+    var monthField = $("#monthField"), listview = $("#listview"), newb = $("#new"),
+        lastPage = "#cal",//last page cal or events
+        form = {title: $("#title"), where: $("#where"), note: $("#note"), time: $("#time"),
+                repeat: "once", reminder: "no", level: $("#level-A"), created: null},
+        //functions list
+        nextMonth, updateListview, prevMonth, newEventAction, daysInMonth, newTD, buildCal, buildCal, editEvent, getHM, newEvent, saveEvent, deleteEvent, buildeventsList,
+        date = new Date(),
+        //months US short symbol
+        months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+        year = date.getFullYear().toString(), month = (date.getMonth() + 1).toString(), day = date.getDate().toString();
+    if (month.length === 1) {
         month = "0" + month;
     }
-    var lastPage="#cal";//last page cal or events
-    var form = {title: $("#title"), where: $("#where"), note: $("#note"), time: $("#time"),
-        repeat: "once", reminder: "no", level: $("#level-A"), created: null};
-
-//DONE
-    /*var login_next = function(obj){
-     data = obj;
-     buildCal(year, month);
-     $.mobile.changePage("#cal");
-     $.mobile.hidePageLoadingMsg();
-     }
-     */
-
-//show next month
-    var nextMonth = function() {
-        if (month == "12") {
+    
+    nextMonth = function () { //show next month
+        if (month === "12") {
             month = "01";
-            year = (parseInt(year) + 1).toString();
+            year = (parseInt(year, 10) + 1).toString();
+        } else {
+            month = (parseInt(month, 10) + 1).toString();
         }
-        else {
-            month = (parseInt(month) + 1).toString();
-        }
-        if (month.length == 1) {
+        if (month.length === 1) {
             month = "0" + month;
         }
         buildCal(year, month);
     };
-
-//show prev month
-    var prevMonth = function() {
-        if (month == "01") {
+    
+    prevMonth = function () { //show prev month
+        if (month === "01") {
             month = "12";
-            year = (parseInt(year) - 1).toString();
+            year = (parseInt(year, 10) - 1).toString();
+        } else {
+            month = (parseInt(month, 10) - 1).toString();
         }
-        else {
-            month = (parseInt(month) - 1).toString();
-        }
-        if (month.length == 1) {
+        if (month.length === 1) {
             month = "0" + month;
         }
         buildCal(year, month);
     };
 
 //Updating the list of events on the selected day
-    var updateListview = function() {
+    updateListview = function () {
         $.mobile.showPageLoadingMsg();
         listview.empty();
-        var YMD = year + month + day;
-        var events = jukax.eventsGet(YMD);
-        if (events != null) {
-            for (var i = 0; i < events.length; i++) {
-                var row = $("<li></li>");
-                var link = $("<a></a>").click(function() {
-                    editEvent($(this).data("created"), YMD);
-                });
-                if (events[i].level == "C") {
+        var YMD = year + month + day,
+            events = jukax.eventsGet(YMD),
+            i,
+            row,
+            link,
+            linkEvent = function () {
+                editEvent($(this).data("created"), YMD);
+            };
+        if (events !== null) {
+            for (i = 0; i < events.length; i++) {
+                row = $("<li></li>");
+                link = $("<a></a>").click(editEvent);
+                if (events[i].level === "C") {
                     row.data("theme", "b");
-                }
-                else if (events[i].level == "B") {
+                } else if (events[i].level === "B") {
                     row.data("theme", "e");
-                }
-                else {
+                } else {
                     row.data("theme", "d");
                 }
                 $(link).data("created", events[i].created);
@@ -83,8 +78,7 @@ $(function() {
         $.mobile.hidePageLoadingMsg();
     };
 
-//DONE
-    var newEventAction = function() {
+    newEventAction = function () {
         day = $(this).text();
         updateListview();
         newb.click(newEvent);
@@ -92,55 +86,54 @@ $(function() {
     };
 
 //return the nbre of days on a month
-    var daysInMonth = function(year, month) {
+    daysInMonth = function (year, month) {
         return [31, (((year % 4 === 0 && year % 100 !== 0) || year % 400 === 0) ? 29 : 28), 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][month];
     };
 
-//months US short symbol
-    var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
 //Create new calendar item
-    var newTD = function(str, date) {
+    newTD = function (str, date) {
         var td = $("<td></td>");
-        if (str != null) {
+        if (str !== null) {
             td.text(str);
             td.click(newEventAction);
-        }
-        else {
+        } else {
             td.attr("colspan", "1");
         }
-        if (date != null && jukax.eventsGet(date)) {
+        if (date !== null && jukax.eventsGet(date)) {
             td.attr("class", "date_has_event");
         }
         return td;
     };
 
 //Building the calendar on a given Month
-    var buildCal = function(year, month) {
+    buildCal = function (year, month) {
         this.year = year;
         this.month = month;
-        var d = new Date(parseInt(year), parseInt(month) - 1, 1);
-        var tbody = $("tbody");
+        var d = new Date(parseInt(year, 10), parseInt(month, 10) - 1, 1),
+            i = 1,
+            j = 1,
+            tr = $("<tr></tr>"),
+            td,
+            tbody = $("tbody"),
+            x;
         tbody.empty();
-        var i = 1, j = 1;
-        var tr = $("<tr></tr>");
-        var td;
-        while (i < d.getDay() || (d.getDay() == 0 && i < 7)) {
+
+        while (i < d.getDay() || (d.getDay() === 0 && i < 7)) {
             tr.append(newTD(null, null));
             i++;
         }
-        d.setDate(daysInMonth(parseInt(year), parseInt(month) - 1));
-        var x = d.getDate() + i;
+        d.setDate(daysInMonth(parseInt(year, 10), parseInt(month, 10) - 1));
+        x = d.getDate() + i;
         while (i < x) {
             tr.append(newTD(j.toString(), year + month + j.toString));
-            if ((i) % 7 == 0) {
+            if (i % 7 === 0) {
                 tbody.append(tr);
                 tr = $("<tr></tr>");
             }
             i++;
             j++;
         }
-        if (d.getDay() != 0) {
+        if (d.getDay() !== 0) {
             i = d.getDay();
             while (i < 7) {
                 tr.append(newTD(null, null));
@@ -150,28 +143,16 @@ $(function() {
         }
         listview.empty();
         newb.hide();
-        monthField.text(months[parseInt(month) - 1] + " " + year);
+        monthField.text(months[parseInt(month, 10) - 1] + " " + year);
         $("#controlgroup").controlgroup();
 
     };
 
-//DONE
-    /*
-     var logout = function() {
-     data.save({success: function() {
-     KiiUser.logOut();
-     $.mobile.changePage("#login");
-     }});
-     };
-     */
-
-//DONE
-    var editEvent = function(created, YMD) {
+    editEvent = function (created, YMD) {
         var e = jukax.eventsGet(YMD, created);
-        if (e == null) {
+        if (e === null) {
             newEvent();
-        }
-        else {
+        } else {
             form.title.val(e.title);
             form.where.val(e.where);
             form.note.val(e.note);
@@ -180,25 +161,24 @@ $(function() {
              form.reminder = $('#reminder option[value="'+e.reminder+'"]').attr("selected", true).val();*/
             form.level = $("#level-radio :radio").attr("checked", false).closest("#level-radio").find("#level-" + e.level).attr("checked", true);
             form.created = e.created;
-            $("#delete").click(function() {
+            $("#delete").click(function () {
                 deleteEvent(created, YMD);
             });
             $("#delete").show();
             $.mobile.changePage("#eventPage");
         }
     };
-
-//DONE
     
-    var getHM = function(){//get Hours:Minutes String
-        var time=new Date();
-        var hours = time.getHours().toString();
-        var minutes = time.getMinutes().toString();
-        if (hours.length ==1){hours="0"+hours;}
-        if (minutes.length == 1){minutes="0"+minutes;}
-        return hours+":"+minutes;
-    }
-    var newEvent = function() {
+    getHM = function () {//get Hours:Minutes String
+        var time = new Date(),
+            hours = time.getHours().toString(),
+            minutes = time.getMinutes().toString();
+        if (hours.length === 1) {hours = "0" + hours; }
+        if (minutes.length === 1) {minutes = "0" + minutes; }
+        return hours + ":" + minutes;
+    };
+    
+    newEvent = function () {
         form.title.val("");
         form.where.val("");
         form.note.val("");
@@ -207,11 +187,10 @@ $(function() {
         form.created = null;
         $("#delete").hide();
         $.mobile.changePage("#eventPage");
-        $("#level-radio :radio").checkboxradio("refresh")
+        $("#level-radio :radio").checkboxradio("refresh");
     };
 
-//DONE
-    var saveEvent = function() {
+    saveEvent = function () {
         var event = {title: form.title.val(), where: form.where.val(), note: form.note.val(), time: form.time.val(),
             repeat: "once", reminder: "no", level: $("#level-radio input:checked").val(), created: form.createdd};
         jukax.eventsUpdate(year + month + day, event);
@@ -219,39 +198,40 @@ $(function() {
         $.mobile.changePage(lastPage);
     };
 
-//DONE
-    var deleteEvent = function(created, YMD) {
+    deleteEvent = function (created, YMD) {
         jukax.eventsDelete(YMD, created);
         updateListview();
         buildeventsList();
         $.mobile.changePage(lastPage);
     };
 
-//DONE
-    var buildeventsList = function() {
+    buildeventsList = function () {
         $.mobile.showPageLoadingMsg();
-        var evlist = $("#eventsList");
-        evlist.empty()
+        var evlist = $("#eventsList"),
+            i,
+            events,
+            row,
+            link,
+            linkEvent = function () {
+                editEvent($(this).data("created"), $(this).data("date"));
+            };
+        evlist.empty();
         for (date in jukax.dataGet().get("data")) {
-            var events = jukax.eventsGet(date);
-            if (events == null) {
+            events = jukax.eventsGet(date);
+            if (events === null) {
                 continue;
             }
             evlist.append($("<li></li>").data("role", "list-divider").data("theme", "a").text(date.substring(6) + "/" + date.substr(4, 2) + "/" + date.substr(0, 4)
                     ).append($("<span></span>").attr("class", "ui-li-count").data("theme", "a").text(events.length.toString())));
 
-            for (var i = 0; i < events.length; i++) {
-                var row = $("<li></li>");
-                var link = $("<a></a>").click(function() {
-                    editEvent($(this).data("created"), $(this).data("date"));
-                });
-                if (events[i].level == "C") {
+            for (i = 0; i < events.length; i++) {
+                row = $("<li></li>");
+                link = $("<a></a>").click(linkEvent);
+                if (events[i].level === "C") {
                     row.data("theme", "b");
-                }
-                else if (events[i].level == "B") {
+                } else if (events[i].level === "B") {
                     row.data("theme", "e");
-                }
-                else {
+                } else {
                     row.data("theme", "d");
                 }
                 $(link).data("created", events[i].created);
@@ -264,92 +244,32 @@ $(function() {
             }
         }
         $.mobile.changePage("#events");
-        lastPage="#events"
+        lastPage = "#events";
         evlist.listview("refresh");
         $.mobile.hidePageLoadingMsg();
-    }
-
-//DONE
-    /*
-     var deleteData = function() {
-     data.delete({success: function() {
-     data = user.bucketWithName("data").createObject();
-     data.set("data", {});
-     data.save({success: function(o) {
-     data = o;
-     data.refresh({success: function(d) {
-     data = d
-     buildCal(year, month);
-     $.mobile.changePage("#cal");
-     }});
-     }});
-     }});
-     }
-     */
-
-//DONE
-    /*var updatePassword = function() {
-     var p = $("#updatepasswordnew").val();
-     try {
-     if (p != "" && p != null && p != undefined) {
-     user.updatePassword($("#updatepasswordold").val(), p, {success: function(u) {
-     $("#updatepasswordnew").val("");
-     $("#updatepasswordold").val("");
-     user = u;
-     user.refresh({success: function(u) {
-     user = u;
-     $.mobile.changePage("#cal");
-     },
-     failure: function(u, e) {
-     console.log(e);
-     }});
-     }});
-     }
-     } catch (e) {
-     console.log("error updating password");
-     }
-     }
-     */
-
-//DONE
-    /*
-     var deleteAccount = function() {
-     user.delete({success: function() {
-     $.mobile.changePage("#login");
-     }});
-     }
-     */
-
-
-
-
-
-
-
-
-
-
-
+    };
 
     function performRegistration() {
         $.mobile.showPageLoadingMsg();
-        var username = $("#username").val();
-        var password = $("#password").val();
+        var username = $("#username").val(),
+            password = $("#password").val();
         try {
             jukax.accountCreate(username, password, {
-                success: function() {
+                success: function () {
                     buildCal(year, month);
                     $.mobile.changePage("#cal");
-        $("#username").val("");
-        $("#password").val("");
+                    $("#username").val("");
+                    $("#password").val("");
                     $.mobile.hidePageLoadingMsg();
                 },
-                failure: function(e) {
+                failure: function (e) {
                     $.mobile.hidePageLoadingMsg();
-                    if (e.type == jukax.ERROR_CREATING_USER) {
+                    if (e.type === jukax.ERROR_CREATING_USER) {
                         alert("Unable to register: " + e.message);
                     }
-                }});
+                }
+            }
+                               );
         } catch (e) {
             $.mobile.hidePageLoadingMsg();
             alert("Unable to register: " + e.message);
@@ -359,21 +279,24 @@ $(function() {
 
     function performLogin() {
         $.mobile.showPageLoadingMsg();
-        var username = $("#username").val();
-        var password = $("#password").val();
-        jukax.accountLogin(username, password, {success:
-                    function() {
-                        buildCal(year, month);
-                        $.mobile.changePage("#cal");
-        $("#username").val("");
-        $("#password").val("");
-                        $.mobile.hidePageLoadingMsg();
-                    }, failure: function(e) {
+        var username = $("#username").val(),
+            password = $("#password").val();
+        jukax.accountLogin(username, password, {
+            success: function () {
+                buildCal(year, month);
+                $.mobile.changePage("#cal");
+                $("#username").val("");
+                $("#password").val("");
                 $.mobile.hidePageLoadingMsg();
-                if (e.type == jukax.ERROR_LOGIN) {
+            },
+            failure: function (e) {
+                $.mobile.hidePageLoadingMsg();
+                if (e.type === jukax.ERROR_LOGIN) {
                     alert("Unable to login: " + e.message);
                 }
-            }});
+            }
+        }
+                          );
 
     }
 
@@ -382,94 +305,101 @@ $(function() {
     //Click Events
     $("#register-button").click(performRegistration);
     $("#login-button").click(performLogin);
-    $("#logout").click(function() {
+    $("#logout").click(function () {
         jukax.accountLogout();
         $.mobile.changePage("#login");
     });
-    $("#logout2").click(function() {
+    $("#logout2").click(function () {
         jukax.accountLogout();
-        $.mobile.changePage("#login");   
+        $.mobile.changePage("#login");
     });
-    $("#deleteaccountbutton").click(function() {
-        jukax.accountDelete({success: function() {
-            $("#deleteaccountmessage").text("Done!").css("color", "gree").show();
-                            setTimeout(function() {
-                                $("#deleteaccountmessage").hide();
-                                $.mobile.changePage("#login");
-                            }, 2000);
+    $("#deleteaccountbutton").click(function () {
+        jukax.accountDelete({
+            success: function () {
+                $("#deleteaccountmessage").text("Done!").css("color", "gree").show();
+                setTimeout(function () {
+                    $("#deleteaccountmessage").hide();
+                    $.mobile.changePage("#login");
+                }, 2000);
             },
-                            failure:function(){
-                                $("#deleteaccountmessage").text("Failed!").css("color", "red").show();
-                                setTimeout(function() {
-                                    $("#deleteaccountmessage").hide();
-                                    $.mobile.loadPage("#login");
-                                }, 3000);
-                            
-                            }});
-    });
-    $("#updatepasswordbutton").click(function() {
+            failure: function () {
+                $("#deleteaccountmessage").text("Failed!").css("color", "red").show();
+                setTimeout(function () {
+                    $("#deleteaccountmessage").hide();
+                    $.mobile.loadPage("#login");
+                }, 3000);
+            }
+        }
+                           );
+    }
+                                   );
+    $("#updatepasswordbutton").click(function () {
         try {
             jukax.accountUpdatePassword(
-                    $("#updatepasswordold").val(),
+                $("#updatepasswordold").val(),
                 $("#updatepasswordnew").val(),
-                    {success: function() {
-                            $("#updatepasswordmessage").text("Done!").css("color", "gree").show();
-                            setTimeout(function() {
-                                $("#updatepasswordmessage").hide();
-                            }, 3000);
-                        }, failure: function(e) {
-                            if (e.type == jukax.ERROR_UNVALID_INPUT) {
-                                alert(e.message);
-                            } else if (e.type == jukax.ERROR_UPDATING_PASSWORD) {
-                                $("#updatepasswordmessage").text("Failed!").css("color", "red").show();
-                                setTimeout(function() {
-                                    $("#updatepasswordmessage").hide();
-                                }, 3000);
-                            } else {
-                                $("#updatepasswordmessage").text("Relogin needed!").css("color", "yellow").show();
-                                setTimeout(function() {
-                                    $("#updatepasswordmessage").hide();
-                                    $.mobile.changePage("#login");
-                                }, 3000);
-                            }
-                        }});
-        }
-        catch (e) {
+                {success: function () {
+                    $("#updatepasswordmessage").text("Done!").css("color", "gree").show();
+                    setTimeout(function () {
+                        $("#updatepasswordmessage").hide();
+                    }, 3000);
+                }, failure: function (e) {
+                    if (e.type === jukax.ERROR_UNVALID_INPUT) {
+                        alert(e.message);
+                    } else if (e.type === jukax.ERROR_UPDATING_PASSWORD) {
+                        $("#updatepasswordmessage").text("Failed!").css("color", "red").show();
+                        setTimeout(function () {
+                            $("#updatepasswordmessage").hide();
+                        }, 3000);
+                    } else {
+                        $("#updatepasswordmessage").text("Relogin needed!").css("color", "yellow").show();
+                        setTimeout(function () {
+                            $("#updatepasswordmessage").hide();
+                            $.mobile.changePage("#login");
+                        }, 3000);
+                    }
+                }
+                    }
+            );
+        } catch (e) {
             $("#updatepasswordmessage").text("Failed!").css("color", "red").show();
-            setTimeout(function() {
+            setTimeout(function () {
                 $("#updatepasswordmessage").hide();
             }, 3000);
         }
-        ;
         $("#updatepasswordnew").val("");
-        $("#updatepasswordold").val("")
-    });
-    $("#deletedatabutton").click(function() {
+        $("#updatepasswordold").val("");
+    }
+                                    );
+    $("#deletedatabutton").click(function () {
         jukax.eventsCleanup({
-            success: function() {
+            success: function () {
                 buildCal(year, month);
                 $("#deletedatamessage").text("Done!").css("color", "gree").show();
-                setTimeout(function() {
+                setTimeout(function () {
                     $("#deletedatamessage").hide();
                 }, 3000);
             },
-            failure: function(e) {
-                if (e.type == jukax.ERROR_CLEANINGUP_EVENTS) {
+            failure: function (e) {
+                if (e.type === jukax.ERROR_CLEANINGUP_EVENTS) {
                     $("#deletedatamessage").text("Failed!").css("color", "red").show();
-                    setTimeout(function() {
+                    setTimeout(function () {
                         $("#deletedatamessage").hide();
                     }, 3000);
                 } else {
                     $("#deletedatamessage").text("Relogin needed!").css("color", "yellow").show();
-                    setTimeout(function() {
+                    setTimeout(function () {
                         $("#deletedatamessage").hide();
                         $.mobile.changePage("#login");
                     }, 3000);
                 }
-            }})
-    });
-    $("#gotoCal").click(function(){
-        lastPage="#cal";
+            }
+        }
+                           );
+    }
+                                );
+    $("#gotoCal").click(function () {
+        lastPage = "#cal";
         $.mobile.changePage("#cal");
     });
 
@@ -482,10 +412,10 @@ $(function() {
     newb.click(newEvent);
     $("#save").click(saveEvent);
     $("#gotoEvents").click(buildeventsList);
-    $("#backbutton").click(function(){
+    $("#backbutton").click(function () {
         $.mobile.changePage(lastPage);
     });
     $("#cal").niceScroll();
-     $("#events").niceScroll();
+    $("#events").niceScroll();
 
 });
