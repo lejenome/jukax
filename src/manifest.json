@@ -1,23 +1,23 @@
 {
-  "name": "Jukax",
-  "description": "Sample Calendar/To-Do app",
-  "author": "Moez Bouhlel",
-  "manifest_version": 2,
-  "version": "0.1",
-  "app": {
-    "background": {
-      "scripts": ["background.js"]
-    }
-  },
-  "permissions": ["http://code.jquery.com/*","https://api.kii.com/*","webview"],
-  "icons": {
-    "256": "/img/jukax-256.png",
-    "128": "/img/jukax-128.png",
-    "64": "/img/jukax-64.png",
-    "60": "/img/jukax-60.png",
-    "48": "/img/jukax-48.png",
-    "32": "/img/jukax-32.png",
-    "16": "/img/jukax-16.png"
-  },
-  "update_url": "http://lejenome.github.io/jukax/chrome-updates.xml"
+    "name": "Jukax",
+    "description": "Sample Calendar/To-Do app",
+    "author": "Moez Bouhlel",
+    "manifest_version": 2,
+    "version": "trunk",
+    "app": {
+        "background": {
+            "scripts": ["background.js"]
+        }
+    },
+    "permissions": ["http://code.jquery.com/*", "https://api.kii.com/*", "webview"],
+    "icons": {
+        "256": "/img/jukax-256.png",
+        "128": "/img/jukax-128.png",
+        "64": "/img/jukax-64.png",
+        "60": "/img/jukax-60.png",
+        "48": "/img/jukax-48.png",
+        "32": "/img/jukax-32.png",
+        "16": "/img/jukax-16.png"
+    },
+    "update_url": "http://lejenome.github.io/jukax/chrome-updates.xml"
 }

@@ -2,26 +2,27 @@ body {
     height: 100%;
     width: 100%;
 }
-
-#cal-container>table  ,#cal-container>table  *  {
+#cal-container>table,
+#cal-container>table td,
+#cal-container>table th{
     /* old-style reset here :) */
-    border: 0px;
-    padding: 0px;
+    border: 0;
+    padding: 0;
     font-family: Helvetica;
-    background: white;
+    background-color: white;
     text-align: center;
     background: url(../img/body.png) repeat-x;
 }
-
 #cal-container>table {
     border-collapse: separate;
     border: 1px solid #9DABCE;
-    border-width: 0px 0px 1px 1px;
+    border-width: 0 0 1px 1px;
     margin: 10px auto;
     font-size: 20px;
+    border-spacing: 0;
 }
-
-#cal-container>table  td, #cal-container>table  th {
+#cal-container>table td,
+#cal-container>table th {
     width: 81px;
     height: 81px;
     text-align: center;
@@ -30,36 +31,111 @@ body {
     color: #444;
     position: relative;
 }
-
-#cal-container>table  th {
+#cal-container>table th {
     height: 30px;
     font-weight: bold;
     font-size: 14px;
 }
-
-#cal-container>table  td:hover, #cal-container>table  th:hover {
-    background-position: 0px -81px;
+#cal-container>table td:hover,
+#cal-container>table th:hover {
+    background-position: 0 -81px;
     color: #222;
 }
-
-#cal-container>table  td.date_has_event {
-    background-position: 162px 0px;
+#cal-container>table .date_has_event {
+    background-position: 162px 0;
     color: white;
 }
-
-#cal-container>table  td.date_has_event:hover {
+#cal-container>table .date_has_event:hover {
     background-position: 162px -81px;
 }
-
-#cal-container>table  td.padding {
+#cal-container>table .padding {
     background: url(../img/calpad.jpg);
 }
-
-#cal-container>table  td.today {
-    background-position: 81px 0px;
+#cal-container>table .today {
+    background-position: 81px 0;
     color: white;
 }
-
-#cal-container>table  td.today:hover {
+#cal-container>table .today:hover {
     background-position: 81px -81px;
 }
+/**************************************************/
+
+/* Left transition */
+
+#listview li.left,
+#eventsList li.left {
+    -webkit-transition: -webkit-transform 250ms ease;
+    -moz-transition: -moz-transform 250ms ease;
+    -ms-transition: -ms-transform 250ms ease;
+    -o-transition: -o-transform 250ms ease;
+    transition: transform 250ms ease;
+    -webkit-transform: translateX(-100%);
+    -moz-transform: translateX(-100%);
+    -ms-transform: translateX(-100%);
+    -o-transform: translateX(-100%);
+    transform: translateX(-100%);
+}
+/* Right transition */
+
+#listview li.right,
+#eventsList li.right {
+    -webkit-transition: -webkit-transform 250ms ease;
+    -moz-transition: -moz-transform 250ms ease;
+    -ms-transition: -ms-transform 250ms ease;
+    -o-transition: -o-transform 250ms ease;
+    transition: transform 250ms ease;
+    -webkit-transform: translateX(100%);
+    -moz-transform: translateX(100%);
+    -ms-transform: translateX(100%);
+    -o-transform: translateX(100%);
+    transform: translateX(100%);
+}
+/* Border bottom for the previous button during the transition*/
+
+#listview li.left a.ui-btn,
+#eventsList li.left a.ui-btn,
+#listview li.right a.ui-btn,
+#eventsList li.right a.ui-btn {
+    border-top-width: 0;
+    border-left-width: 1px;
+    border-right-width: 1px;
+}
+#listview li a.ui-btn.border-bottom,
+#eventsList li a.ui-btn.border-bottom {
+    border-bottom-width: 1px;
+}
+#listview.touch li.ui-li-has-alt a.ui-btn,
+#eventsList li.ui-li-has-alt a.ui-btn {
+    margin-right: 0;
+}
+/* Styling for the popup */
+
+#confirmDeleteFromEventsList p,
+#confirmDelete p {
+    text-align: center;
+    font-size: inherit;
+    margin-bottom: .75em;
+}
+/****************************************************/
+
+/********************************************\
+
+
+#cal-container{
+	position: relative;
+	width: 100%;		
+
+}
+#cal-container: before {
+    content: "";
+    display: block;
+    padding-top: 100%;
+}
+#cal-container>table {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+}
+\********************************************/

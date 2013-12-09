@@ -8,13 +8,42 @@ var ERROR_DELETING_USER = 8;
 var ERROR_UNVALID_INPUT = 9;
 var ERROR_UPDATING_PASSWORD = 10;
 var ERROR_CLEANINGUP_EVENTS = 11;
+var Storages = { //where to store user data
+    local: false, //TODO: add support for SessionStorage for offline (will be set to True when implemented)
+    indexedDB: false, //TODO: should i support indexedDB 
+    Kii: false
+};
 
 "use strict";
-/*jslint plusplus: true */ //disable var++ errors on JSLint
+//disable var++ errors on JSLint
+/*jslint plusplus: true */
+//stop some "<X> was used before it was def" error
+/*jslint devel: true */
+/*jslint browser: true */
+/*global KiiSite */
+/*global KiiUser */
+/*global Kii */
+/*global KiiQuery */
 
-var initialize = function (appID, appKey, kii_site) {
-    kii_site = typeof kii_site !== 'undefined' ? kii_site : KiiSite.US;
-    Kii.initializeWithSite(appID, appKey, kii_site);
+var storagesSet = function (storages) {
+    storages = typeof storages !== 'undefined' ? storages : {};
+    if (storages.hasOwnProperty("local")) {
+        Storages.local = storages.local;
+    }
+    if (storages.hasOwnProperty("indexedDB")) {
+        Storages.indexedDB = storages.indexedDB;
+    }
+    if (storages.hasOwnProperty("Kii")) {
+        Storages.Kii = storages.Kii;
+    }
+};
+var initializeKii = function (appID, appKey, kii_site) {
+    if (Storages.Kii) {
+        kii_site = typeof kii_site !== 'undefined' ? kii_site : KiiSite.US;
+        Kii.initializeWithSite(appID, appKey, kii_site);
+    } else {
+        throw "Kii is not set as a Storage";
+    }
 };
 
 var accountCreate = function (username, password, fn) {
@@ -37,27 +66,33 @@ var accountCreate = function (username, password, fn) {
                             },
                             failure: function (obj, error) {
                                 if (fn.hasOwnProperty("failure")) {
-                                    fn.failure({type: 7, message: error});
+                                    fn.failure({
+                                        type: 7,
+                                        message: error
+                                    });
                                 }
                             }
-                        }
-                                         );
+                        });
                     },
                     failure: function (theObject, errorString) {
                         if (fn.hasOwnProperty("failure")) {
-                            fn.failure({type: 3, message: errorString});
+                            fn.failure({
+                                type: 3,
+                                message: errorString
+                            });
                         }
                     }
-                }
-                                  );
+                });
             },
             failure: function (theUser, errorString) {
                 if (fn.hasOwnProperty("failure")) {
-                    fn.failure({type: 4, message: errorString});
+                    fn.failure({
+                        type: 4,
+                        message: errorString
+                    });
                 }
             }
-        }
-                     );
+        });
     } catch (e) {
         throw e.message;
     }
@@ -71,7 +106,7 @@ var accountLogin = function (username, password, fn) {
             bucket = user.bucketWithName("data");
             var query = KiiQuery.queryWithClause(),
                 queryCallbacks = {
-                    success: function (queryPerformed, r, nextQuery) {
+                    success: function (queryPerformed, r /*, nextQuery*/ ) {
                         r[0].refresh({
                             success: function (obj) {
                                 data = obj;
@@ -87,23 +122,30 @@ var accountLogin = function (username, password, fn) {
                                     },
                                     failure: function (obj, errorString) {
                                         if (fn.hasOwnProperty("failure")) {
-                                            fn.failure({type: 3, message: errorString});
+                                            fn.failure({
+                                                type: 3,
+                                                message: errorString
+                                            });
                                         }
                                     }
-                                }
-                                         );
+                                });
                             },
                             failure: function (obj, errorString) {
                                 if (fn.hasOwnProperty("failure")) {
-                                    fn.failure({type: 7, message: errorString});
+                                    fn.failure({
+                                        type: 7,
+                                        message: errorString
+                                    });
                                 }
                             }
-                        }
-                                    );
+                        });
                     },
                     failure: function (queryPerformed, errorString) {
                         if (fn.hasOwnProperty("failure")) {
-                            fn.failure({type: 5, message: errorString});
+                            fn.failure({
+                                type: 5,
+                                message: errorString
+                            });
                         }
                     }
                 };
@@ -111,7 +153,10 @@ var accountLogin = function (username, password, fn) {
         },
         failure: function (theUser, errorString) {
             if (fn.hasOwnProperty("failure")) {
-                fn.failure({type: 6, message: errorString});
+                fn.failure({
+                    type: 6,
+                    message: errorString
+                });
             }
         }
     });
@@ -126,8 +171,7 @@ var accountLogout = function () {
         failure: function () {
             KiiUser.logOut();
         }
-    }
-             );
+    });
 };
 
 var accountDelete = function (fn) {
@@ -140,11 +184,13 @@ var accountDelete = function (fn) {
         },
         failure: function (user, errorString) {
             if (fn.hasOwnProperty("failure")) {
-                fn.failure({type: 8, message: errorString});
+                fn.failure({
+                    type: 8,
+                    message: errorString
+                });
             }
         }
-    }
-               );
+    });
 };
 
 var accountUpdatePassword = function (old_pw, new_pw, fn) {
@@ -152,19 +198,24 @@ var accountUpdatePassword = function (old_pw, new_pw, fn) {
         var name = user.getUsername();
         if (old_pw !== "" && old_pw !== null && new_pw !== "" && new_pw !== null) {
             user.updatePassword(old_pw, new_pw, {
-                success: function (u) {
+                success: function () {
                     accountLogin(name, new_pw, fn);
                 },
                 failure: function (user, errorString) {
                     if (fn.hasOwnProperty("failure")) {
-                        fn.failure({type: 10, message: errorString});
+                        fn.failure({
+                            type: 10,
+                            message: errorString
+                        });
                     }
                 }
-            }
-                               );
+            });
         } else {
             if (fn.hasOwnProperty("failure")) {
-                fn.failure({type: 9, message: "Unvalid Input"});
+                fn.failure({
+                    type: 9,
+                    message: "Unvalid Input"
+                });
             }
         }
     } catch (e) {
@@ -189,30 +240,36 @@ var eventsCleanup = function (fn) {
                         },
                         failure: function (obj, errorString) {
                             if (fn.hasOwnProperty("failure")) {
-                                fn.failure({type: 7, message: errorString});
+                                fn.failure({
+                                    type: 7,
+                                    message: errorString
+                                });
                             }
                         }
-                    }
-                                );
+                    });
                 },
                 failure: function (obj, errorString) {
                     if (fn.hasOwnProperty("failure")) {
-                        fn.failure({type: 3, message: errorString});
+                        fn.failure({
+                            type: 3,
+                            message: errorString
+                        });
                     }
                 }
-            }
-                     );
+            });
         },
         failure: function (obj, errorString) {
             if (fn.hasOwnProperty("failure")) {
-                fn.failure({type: 11, message: errorString});
+                fn.failure({
+                    type: 11,
+                    message: errorString
+                });
             }
         }
-    }
-               );
+    });
 };
 var eventsNew, eventsUpdate;
-eventsNew = eventsUpdate = function (YMD, event) {//YMD : Year+Month+Day String
+eventsNew = eventsUpdate = function (YMD, event) { //YMD : Year+Month+Day String
     var eventIndex = -1,
         CurrentEvent = {},
         eventsData = data.get("data"),
@@ -257,8 +314,7 @@ eventsNew = eventsUpdate = function (YMD, event) {//YMD : Year+Month+Day String
         failure: function () {
             //....????:w?
         }
-    }
-             );
+    });
 };
 
 var eventsDelete = function (YMD, created) {
@@ -278,7 +334,9 @@ var eventsDelete = function (YMD, created) {
         return;
     }
     eventsData[YMD].splice(eventIndex, 1);
-    if (eventsData[YMD].length === 0) {delete eventsData[YMD]; }
+    if (eventsData[YMD].length === 0) {
+        delete eventsData[YMD];
+    }
     data.set("data", eventsData);
     data.saveAllFields({
         success: function (obj) {
@@ -288,12 +346,20 @@ var eventsDelete = function (YMD, created) {
         failure: function () {
             //.....??????
         }
-    }
-                      );
+    });
 };
 
 var eventsObject = function () {
-    return {title: "", where: "", note: "", time: "", repeat: "once", reminder: "no", level: "A", created: new Date().getTime()};
+    return {
+        title: "",
+        where: "",
+        note: "",
+        time: "",
+        repeat: "once",
+        reminder: "no",
+        level: "A",
+        created: new Date().getTime()
+    };
 };
 
 var eventsGet = function (YMD, created) {
@@ -338,7 +404,7 @@ var jukax = window.jukax = {
     ERROR_UNVALID_INPUT: ERROR_UNVALID_INPUT,
     ERROR_UPDATING_PASSWORD: ERROR_UPDATING_PASSWORD,
     ERROR_CLEANINGUP_EVENTS: ERROR_CLEANINGUP_EVENTS,
-    initialize: initialize,
+    initializeKii: initializeKii,
     accountCreate: accountCreate,
     accountLogin: accountLogin,
     accountLogout: accountLogout,
@@ -349,5 +415,6 @@ var jukax = window.jukax = {
     eventsUpdate: eventsUpdate,
     eventsDelete: eventsDelete,
     eventsObject: eventsObject,
-    eventsGet: eventsGet
+    eventsGet: eventsGet,
+    storagesSet: storagesSet
 };

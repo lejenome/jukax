@@ -1,0 +1,20 @@
+{
+  "name": "Jukax",
+  "version": "trunk",
+  "description": "Sample Calendar/To-Do app",
+  "launch_path": "/index.html",
+  "icons": {
+    "16": "/img/jukax-16.png",
+    "32": "/img/jukax-32.png",
+    "48": "/img/jukax-48.png",
+    "60": "/img/jukax-60.png",
+    "64": "/img/jukax-64.png",
+    "128": "/img/jukax-128.png",
+    "256": "/img/jukax-256.png"
+  },
+  "developer": {
+    "name": "Moez Bouhlel",
+    "url": "https://github.com/lejenome"
+  },
+  "default_locale": "en"
+}
