@@ -25,7 +25,7 @@ $(function () {
             created: null
         },
         //functions list
-        newEventAction,
+        daySelectAction,
         date = new Date(),
         //months US short symbol
         months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
@@ -36,8 +36,9 @@ $(function () {
     if (month.length === 1) {
         month = "0" + month;
     }
-    
-    newEventAction = function () {
+
+    // when a day from Cal selected
+    daySelectAction = function () {
         day = $(this).text();
         updateListview();
         newb.click(newEvent);
@@ -124,21 +125,21 @@ $(function () {
         var td = $("<td></td>");
         if (str !== null) {
             td.text(str);
-            td.click(newEventAction);
+            td.click(daySelectAction);
         } else {
-            td.attr("colspan", "1");
+            td.addClass("empty");
         }
         if (date !== null && jukax.eventsGet(date)) {
-            td.attr("class", "date_has_event");
+            td.addClass("date-has-event");
         }
         return td;
     }
 
-    //Building the calendar on a given Month
+    //Building the calendar for a given Month
     function buildCal(year, month) {
         window.year = year;
         window.month = month;
-        var d = new Date(parseInt(year, 10), parseInt(month, 10) - 1, 1),
+        var d = new Date(year + "-" + month),
             i = 1,
             j = 1,
             tr = $("<tr></tr>"),
@@ -154,7 +155,7 @@ $(function () {
         d.setDate(daysInMonth(parseInt(year, 10), parseInt(month, 10) - 1));
         x = d.getDate() + i;
         while (i < x) {
-            tr.append(newTD(j.toString(), year + month + j.toString));
+            tr.append(newTD(j.toString(), year + month + j.toString()));
             if (i % 7 === 0) {
                 tbody.append(tr);
                 tr = $("<tr></tr>");
@@ -174,7 +175,6 @@ $(function () {
         newb.hide();
         monthField.text(months[parseInt(month, 10) - 1] + " " + year);
         $("#controlgroup").controlgroup();
-
     }
 
     function editEvent(created, YMD) {
@@ -545,11 +545,31 @@ $(function () {
     $("#backbutton").click(function () {
         $.mobile.changePage(lastPage);
     });
-    //$("#cal").niceScroll();  // TODO: add nicescroll for chrome packaged web apps
-    //$("#events").niceScroll();
 
     if (!$.mobile.support.touch) {
         // Remove the class that is used to hide the delete button on touch devices
         listview.removeClass("touch");
     }
+
+    // TODO: add tocuh swipe support
+    $.event.special.swipe.horizontalDistanceThreshold = 70; //at least 70 px to be vertical swipe
+    $(document).on("swipeleft swiperight", "tbody",
+        function (event) {
+            if (event.type === "swipeleft") {
+                nextMonth();
+            } else {
+                prevMonth();
+            }
+
+        });
+    // TODO: add nicescroll for chrome packaged web apps
+    /*$("#events").niceScroll({
+        boxzoom: false,
+        touchbehavior: true
+    });
+    $("#cal").niceScroll({
+        boxzoom: false,
+        touchbehavior: true
+    });*/
+
 });

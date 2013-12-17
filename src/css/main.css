@@ -4,7 +4,7 @@ body {
 }
 #cal-container>table,
 #cal-container>table td,
-#cal-container>table th{
+#cal-container>table th {
     /* old-style reset here :) */
     border: 0;
     padding: 0;
@@ -41,11 +41,14 @@ body {
     background-position: 0 -81px;
     color: #222;
 }
-#cal-container>table .date_has_event {
+#cal-container>table .empty {
+    background-position: 0 0;
+}
+#cal-container>table .date-has-event {
     background-position: 162px 0;
     color: white;
 }
-#cal-container>table .date_has_event:hover {
+#cal-container>table .date-has-event:hover {
     background-position: 162px -81px;
 }
 #cal-container>table .padding {
