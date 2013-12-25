@@ -2,67 +2,79 @@ body {
     height: 100%;
     width: 100%;
 }
-#cal-container>table,
-#cal-container>table td,
-#cal-container>table th {
-    /* old-style reset here :) */
-    border: 0;
-    padding: 0;
-    font-family: Helvetica;
-    background-color: white;
-    text-align: center;
-    background: url(../img/body.png) repeat-x;
-}
 #cal-container>table {
-    border-collapse: separate;
-    border: 1px solid #9DABCE;
-    border-width: 0 0 1px 1px;
-    margin: 10px auto;
+    margin: 0 auto 10px auto;
     font-size: 20px;
-    border-spacing: 0;
-}
-#cal-container>table td,
-#cal-container>table th {
-    width: 81px;
-    height: 81px;
+    font-family: Helvetica;
     text-align: center;
     vertical-align: middle;
-    background: url(../img/cells.png);
-    color: #444;
-    position: relative;
+    color: white;
+}
+
+#cal-container>table td,
+#cal-container>table th {
+    width: 70px;
+    height: 70px;
 }
 #cal-container>table th {
     height: 30px;
     font-weight: bold;
     font-size: 14px;
+    color: #444;
 }
-#cal-container>table td:hover,
-#cal-container>table th:hover {
-    background-position: 0 -81px;
-    color: #222;
+#cal-container>table>tbody {
+    background-image: -moz-linear-gradient(0deg, #327bcb, #70cbeb);
+    background-image: -ms-linear-gradient(0deg, #327bcb, #70cbeb);
+    background-image: -o-linear-gradient(0deg, #327bcb, #70cbeb);
+    background-image: linear-gradient(0deg, #327bcb, #70cbeb);
+    background-image:-webkit-linear-gradient(0deg, rgba(0,0,0,0),rgba(0,0,0,0));
+    border-width: 0;
+    box-shadow: 1px 1px  rgba(0,0,0,0.3), -1px 0px  rgba(0,0,0,0.3);
 }
+#cal-container>table {  /*fix tbody issues on google chrome engine*/
+    background-color: transparent;
+    background-image: -webkit-linear-gradient(270deg, rgba(0,0,0,0) 35px, #70cbeb 0px,#327bcb );
+}
+#cal-container>table tbody td {
+    transition: 0.4s;
+    text-shadow: 0 1px black;
+    border-left-width: 1px;
+    border-bottom-width: 1px;
+    border-top-width: 1px;
+    border-top-color: #6aacde;
+    color: #0000;
+}
+#cal-container>table>tbody tr td:last-child{
+    border-right-width: 1px;
+}
+#cal-container>table>tbody tr:first-child td{
+    border-top-color: #6aacde;
+}
+#cal-container>table,
+#cal-container>table>tbody,
+#cal-container>table td,
+#cal-container>table tr {
+    position: relative;
+    padding: 0;
+    border-spacing: 0;
+    border-collapse: separate;
+    border: 0 solid #2f6288;
+}
+
 #cal-container>table .empty {
-    background-position: 0 0;
+    background-color: #72a0cb;
 }
 #cal-container>table .date-has-event {
-    background-position: 162px 0;
-    color: white;
+    background-color: rgba(0, 0, 150, 0.3);
 }
-#cal-container>table .date-has-event:hover {
-    background-position: 162px -81px;
+#cal-container>table td:hover {
+    background-color: rgba(255, 255, 255, 0.4);
 }
-#cal-container>table .padding {
-    background: url(../img/calpad.jpg);
+#cal-container>table td:active {
+    transition: 0.12s;
+    background-color: rgba(255, 255, 255, 0.4);
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.2) inset;
 }
-#cal-container>table .today {
-    background-position: 81px 0;
-    color: white;
-}
-#cal-container>table .today:hover {
-    background-position: 81px -81px;
-}
-/**************************************************/
-
 /* Left transition */
 
 #listview li.left,
@@ -142,3 +154,74 @@ body {
     right: 0;
 }
 \********************************************/
+
+.tag {} .tag div {
+    text-align: center;
+    padding: 2px;
+    width: 20px;
+    height: 20px;
+    border-radius: 100%;
+    background-color: black;
+    text-shadow: none;
+}
+#tag-A div {
+    background-color: #66CD00;
+}
+#tag-B div {
+    background-color: #CD661D;
+}
+#tag-C div {
+    background-color: #CDAA7D;
+}
+.events li:before {
+    position: absolute;
+    z-index: 1;
+    content: "";
+    top: 1px;
+    bottom: 1px;
+    left: 0px;
+    width: 5px;
+    background-color: gray;
+}
+.events .ui-li-has-count:before {
+    background-color: transparent;
+}
+.events .tag-A:before {
+    background-color: #66CD00;
+}
+.events .tag-B:before {
+    background-color: #CD661D;
+}
+.events .tag-C:before {
+    background-color: #CDAA7D;
+}
+/* TODO: add transition when diaplying the list111111
+#listview{
+    transition: 5s;
+}
+.hidden li{
+    height:0;
+}
+*/
+
+#select-date{
+    display:none;
+}
+#select-date>div{
+    display:block;
+}
+#select-date>div:first-child{
+    margin:0;
+}
+#select-date>div:last-child{
+    width:100%;
+    max-width:400px;
+    margin:0 auto;
+}
+#select-date>div:last-child>div{
+    width:50%;
+}
+#events  div:first-child form{
+    margin-left:50px;
+    margin-right:5px;
+}

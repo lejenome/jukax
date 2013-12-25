@@ -112,23 +112,27 @@ var accountLogin = function (username, password, fn) {
                                 data = obj;
                                 if (typeof data.get("data") === 'undefined') {
                                     data.set("data", {});
+                                    data.save({
+                                        success: function (obj) {
+                                            data = obj;
+                                            if (fn.hasOwnProperty("success")) {
+                                                fn.success();
+                                            }
+                                        },
+                                        failure: function (obj, errorString) {
+                                            if (fn.hasOwnProperty("failure")) {
+                                                fn.failure({
+                                                    type: 3,
+                                                    message: errorString
+                                                });
+                                            }
+                                        }
+                                    });
+                                } else if (fn.hasOwnProperty("success")) {
+                                    fn.success();
+
                                 }
-                                data.save({
-                                    success: function (obj) {
-                                        data = obj;
-                                        if (fn.hasOwnProperty("success")) {
-                                            fn.success();
-                                        }
-                                    },
-                                    failure: function (obj, errorString) {
-                                        if (fn.hasOwnProperty("failure")) {
-                                            fn.failure({
-                                                type: 3,
-                                                message: errorString
-                                            });
-                                        }
-                                    }
-                                });
+
                             },
                             failure: function (obj, errorString) {
                                 if (fn.hasOwnProperty("failure")) {

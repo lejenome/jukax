@@ -13,6 +13,7 @@ $(function () {
     var monthField = $("#monthField"), // current month on the calendar
         listview = $("#listview"), // list of events on selected day
         newb = $("#new"), // new button to create new event on selected day
+        selectDate = $("#select-date"),
         lastPage = "#cal", //last page cal or events
         form = {
             title: $("#title"),
@@ -40,34 +41,34 @@ $(function () {
     // when a day from Cal selected
     daySelectAction = function () {
         day = $(this).text();
+        listview.addClass("hiden");
         updateListview();
-        newb.click(newEvent);
         newb.show();
     };
 
     function nextMonth() { //show next month
-        if (month === "12") {
+        month = (parseInt(month, 10) + 1).toString();
+        if (month === "13") {
             month = "01";
             year = (parseInt(year, 10) + 1).toString();
-        } else {
-            month = (parseInt(month, 10) + 1).toString();
-        }
-        if (month.length === 1) {
+            $("#select-year").val(year).selectmenu("refresh");
+        } else if (month.length === 1) {
             month = "0" + month;
         }
+        $("#select-month").val(months[parseInt(month, 10) - 1]).selectmenu("refresh");
         buildCal(year, month);
     }
 
     function prevMonth() { //show prev month
-        if (month === "01") {
+        month = (parseInt(month, 10) - 1).toString();
+        if (month === "0") {
             month = "12";
             year = (parseInt(year, 10) - 1).toString();
-        } else {
-            month = (parseInt(month, 10) - 1).toString();
-        }
-        if (month.length === 1) {
+            $("#select-year").val(year).selectmenu("refresh");
+        } else if (month.length === 1) {
             month = "0" + month;
         }
+        $("#select-month").val(months[parseInt(month, 10) - 1]).selectmenu("refresh");
         buildCal(year, month);
     }
 
@@ -88,11 +89,11 @@ $(function () {
                 row = $("<li></li>");
                 link = $("<a></a>").click(linkEvent);
                 if (events[i].level === "C") {
-                    row.data("theme", "b");
+                    row.addClass("tag-C");
                 } else if (events[i].level === "B") {
-                    row.data("theme", "e");
+                    row.addClass("tag-B");
                 } else {
-                    row.data("theme", "d");
+                    row.addClass("tag-A");
                 }
                 $(link).data("created", events[i].created);
                 $(link).append("<h3>" + events[i].title + "<small>  (" + events[i].where + ")</small></h3>");
@@ -103,6 +104,7 @@ $(function () {
             }
         }
         listview.listview("refresh");
+        listview.removeClass("hidden");
         $.mobile.loading("hide");
         // Add event delete by swaping left/right on supported devices
         $(document).on("swipeleft swiperight", "#listview li", function (event) {
@@ -312,11 +314,11 @@ $(function () {
                     row = $("<li></li>");
                     link = $("<a></a>").click(linkEvent);
                     if (events[i].level === "C") {
-                        row.data("theme", "b");
+                        row.addClass("tag-C");
                     } else if (events[i].level === "B") {
-                        row.data("theme", "e");
+                        row.addClass("tag-B");
                     } else {
-                        row.data("theme", "d");
+                        row.addClass("tag-A");
                     }
                     $(link).data("created", events[i].created);
                     $(link).data("date", date);
@@ -392,6 +394,8 @@ $(function () {
             jukax.accountCreate(username, password, {
                 success: function () {
                     buildCal(year, month);
+                    $("#select-month").val(months[parseInt(month, 10) - 1]).selectmenu("refresh");
+                    $("#select-year").val(year).selectmenu("refresh");
                     $.mobile.changePage("#cal");
                     $("#username").val("");
                     $("#password").val("");
@@ -418,6 +422,8 @@ $(function () {
             success: function () {
                 buildCal(year, month);
                 $.mobile.changePage("#cal");
+                $("#select-month").val(months[parseInt(month, 10) - 1]).selectmenu("refresh");
+                $("#select-year").val(year).selectmenu("refresh");
                 $("#username").val("");
                 $("#password").val("");
                 $.mobile.loading("hide");
@@ -571,5 +577,18 @@ $(function () {
         boxzoom: false,
         touchbehavior: true
     });*/
-
+    $("#monthCheckbox").click(function () {
+        selectDate.toggle(navigator.userAgent.indexOf('Firefox')>0?0:400);
+    });
+    $("#select-year").change(function () {
+        year = $(this).val();
+        buildCal(year, month);
+    });
+    $("#select-month").change(function () {
+        month = (months.indexOf($(this).val()) + 1).toString();
+        if (month.length === 1) {
+            month = "0" + month;
+        }
+        buildCal(year, month);
+    });
 });
