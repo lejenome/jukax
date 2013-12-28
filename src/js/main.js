@@ -203,6 +203,7 @@ $(function () {
              form.reminder = $('#reminder option[value="'+e.reminder+'"]').prop("checked", true).val();*/
             form.level = e.level;
             $("#level-" + e.level).prop("checked", true);
+            $("#level-radio").controlgroup("refresh");
             form.created = e.created;
             $("#delete").click(function () {
                 deleteEvent(created, YMD);
@@ -508,7 +509,11 @@ $(function () {
     $("#select-year").val(year);
     if (jukax.accountKeepLogin()) {
         $.mobile.changePage("#cal");
-        $.mobile.loading("show");
+        $.mobile.loading("show", {
+            text: "Downloading Data...",
+            textVisible: true,
+            theme: "b"
+        });
         jukax.accountLogin(null, null, {
             success: function () {
                 buildCal(year, month);
