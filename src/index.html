@@ -52,6 +52,10 @@
                 <label for="password">Enter a Password:</label>
                 <input required id="password" type="password" name="name" value="" />
             </div>
+            <div class="ui-mini">
+                <label for="keepLogin">keep login</label>
+                <input type="checkbox" value="keepLogin" checked id="keepLogin">
+            </div>
 
             <div style="margin:32px 18px;">
                 <button id="login-button" data-role="button" data-theme="b" data-shadow="false">Log in</button>
@@ -205,37 +209,35 @@
         <!-- /header -->
         <!-- content -->
         <div data-role="content">
+            <form  action="#" method="post" data-ajax="false" onsubmit="return false;">
+                <label for="title" class="ui-hidden-accessible">Title:</label>
+                <input required name="title" id="title" pattern=".+" placeholder="Title" value="" type="text" />
 
-            <label for="title" class="ui-hidden-accessible">Title:</label>
-            <input name="title" id="title" placeholder="Title" value="" type="text" />
+                <label for="where" class="ui-hidden-accessible">Where:</label>
+                <input name="where" id="where" placeholder="Where" value="" type="text" />
 
-            <label for="where" class="ui-hidden-accessible">Where:</label>
-            <input name="where" id="where" placeholder="Where" value="" type="text" />
-
-            <form>
                 <label for="time" class="ui-hidden-accessible">Time:</label>
                 <input name="time" id="time" value="" type="time" />
-            </form>
 
-            <label for="note" class="ui-hidden-accessible">Note:</label>
-            <textarea cols="40" rows="8" name="note" id="note" placeholder="Note"></textarea>
+                <label for="note" class="ui-hidden-accessible">Note:</label>
+                <textarea cols="40" rows="8" name="note" id="note" placeholder="Note"></textarea>
 
-            <fieldset data-role="controlgroup" data-type="horizontal" data-mini="true" id="level-radio">
-                <legend id="level">Tag:</legend>
-                <input name="level" id="level-A" value="A" type="radio" />
-                <label for="level-A" id="tag-A" class="tag">
-                    <div>A</div>
-                </label>
-                <input name="level" id="level-B" value="B" type="radio" />
-                <label for="level-B" id="tag-B" class="tag">
-                    <div>B</div>
-                </label>
-                <input name="level" id="level-C" value="C" type="radio" />
-                <label for="level-C" id="tag-C" class="tag">
-                    <div>C</div>
-                </label>
-            </fieldset>
-            <!--
+                <fieldset data-role="controlgroup" data-type="horizontal" data-mini="true" id="level-radio">
+                    <legend id="level">Tag:</legend>
+                    <input name="level" id="level-A" value="A" type="radio" />
+                    <label for="level-A" id="tag-A" class="tag">
+                        <span>A</span>
+                    </label>
+                    <input name="level" id="level-B" value="B" type="radio" />
+                    <label for="level-B" id="tag-B" class="tag">
+                        <span>B</span>
+                    </label>
+                    <input name="level" id="level-C" value="C" type="radio" />
+                    <label for="level-C" id="tag-C" class="tag">
+                        <span>C</span>
+                    </label>
+                </fieldset>
+                <!--
                                 <label for="repeat" class="select">Repeat:</label>
                                 <select name="repeat" id="repeat">
                                     <option value="once">Once</option>
@@ -251,6 +253,7 @@
                                     <option value="yes">Yes</option>
                                 </select>
                 -->
+            </form>
         </div>
         <!-- /content -->
 

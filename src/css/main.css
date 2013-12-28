@@ -2,6 +2,12 @@ body {
     height: 100%;
     width: 100%;
 }
+/***********************************************/
+
+/*                 CALENDAR                    */
+
+/***********************************************/
+
 #cal-container>table {
     margin: 0 auto 10px auto;
     font-size: 20px;
@@ -10,7 +16,6 @@ body {
     vertical-align: middle;
     color: white;
 }
-
 #cal-container>table td,
 #cal-container>table th {
     width: 70px;
@@ -27,13 +32,14 @@ body {
     background-image: -ms-linear-gradient(0deg, #327bcb, #70cbeb);
     background-image: -o-linear-gradient(0deg, #327bcb, #70cbeb);
     background-image: linear-gradient(0deg, #327bcb, #70cbeb);
-    background-image:-webkit-linear-gradient(0deg, rgba(0,0,0,0),rgba(0,0,0,0));
+    background-image: -webkit-linear-gradient(0deg, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0));
     border-width: 0;
-    box-shadow: 1px 1px  rgba(0,0,0,0.3), -1px 0px  rgba(0,0,0,0.3);
+    box-shadow: 1px 1px rgba(0, 0, 0, 0.3), -1px 0 rgba(0, 0, 0, 0.3);
 }
-#cal-container>table {  /*fix tbody issues on google chrome engine*/
+#cal-container>table {
+    /*fix tbody issues on google chrome engine*/
     background-color: transparent;
-    background-image: -webkit-linear-gradient(270deg, rgba(0,0,0,0) 35px, #70cbeb 0px,#327bcb );
+    background-image: -webkit-linear-gradient(270deg, rgba(0, 0, 0, 0) 33px, #70cbeb 0px, #327bcb);
 }
 #cal-container>table tbody td {
     transition: 0.4s;
@@ -42,12 +48,11 @@ body {
     border-bottom-width: 1px;
     border-top-width: 1px;
     border-top-color: #6aacde;
-    color: #0000;
 }
-#cal-container>table>tbody tr td:last-child{
+#cal-container>table>tbody tr td:last-child {
     border-right-width: 1px;
 }
-#cal-container>table>tbody tr:first-child td{
+#cal-container>table>tbody tr:first-child td {
     border-top-color: #6aacde;
 }
 #cal-container>table,
@@ -60,21 +65,73 @@ body {
     border-collapse: separate;
     border: 0 solid #2f6288;
 }
-
 #cal-container>table .empty {
     background-color: #72a0cb;
 }
 #cal-container>table .date-has-event {
     background-color: rgba(0, 0, 150, 0.3);
+    border-top-width: 0;
+}
+#cal-container>table .today {
+    background-color: rgba(149, 218, 119, 0.7);
+    border-top-color: rgba(149, 118, 219, 0.5);
 }
 #cal-container>table td:hover {
     background-color: rgba(255, 255, 255, 0.4);
 }
-#cal-container>table td:active {
+#cal-container>table td:active,
+#cal-container>table .selected{
     transition: 0.12s;
     background-color: rgba(255, 255, 255, 0.4);
-    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.2) inset;
+    box-shadow: 0 4px 4px rgba(0, 0, 0, 0.2) inset;
 }
+#cal-container>table .date-has-event:active,
+#cal-container>table .date-has-event.selected
+{
+    background-color: rgba(100, 100, 250, 0.6);
+}
+@media only screen and (max-width: 480px),
+only screen and (max-device-width: 480px) {
+    #cal-container>table td,
+    #cal-container>table th {
+        width: 60px;
+    }
+    #cal-container>table td {
+        height: 60px;
+    }
+}
+@media only screen and (max-width: 480px),
+only screen and (max-device-width: 480px) {
+    #cal-container>table td,
+    #cal-container>table th {
+        width: 60px;
+    }
+    #cal-container>table td {
+        height: 50px;
+    }
+}
+@media only screen and (max-width: 370px),
+only screen and (max-device-width: 370px) {
+    #cal-container>table td,
+    #cal-container>table th {
+        width: 50px;
+        
+    }
+    #cal-container>table td {
+        height: 40px;
+        font-size: 19px;
+    }
+    #cal-container>table{
+
+    margin:-10px;
+    }
+}
+/******************************************/
+
+/*               DELETE DIALOG            */
+
+/******************************************/
+
 /* Left transition */
 
 #listview li.left,
@@ -155,7 +212,14 @@ body {
 }
 \********************************************/
 
-.tag {} .tag div {
+/*********************************************/
+
+/*                   TAGS                    */
+
+/*********************************************/
+
+.tag {}
+.tag span {
     text-align: center;
     padding: 2px;
     width: 20px;
@@ -163,14 +227,15 @@ body {
     border-radius: 100%;
     background-color: black;
     text-shadow: none;
+    display: block;
 }
-#tag-A div {
+#tag-A span {
     background-color: #66CD00;
 }
-#tag-B div {
+#tag-B span {
     background-color: #CD661D;
 }
-#tag-C div {
+#tag-C span {
     background-color: #CDAA7D;
 }
 .events li:before {
@@ -204,24 +269,34 @@ body {
 }
 */
 
-#select-date{
-    display:none;
+.events li small{
+    color: #777;
 }
-#select-date>div{
-    display:block;
+
+/*******************************************/
+
+/*               SELECT DATE               */
+
+/*******************************************/
+
+#select-date {
+    display: none;
 }
-#select-date>div:first-child{
-    margin:0;
+#select-date>div {
+    display: block;
 }
-#select-date>div:last-child{
-    width:100%;
-    max-width:400px;
-    margin:0 auto;
+#select-date>div:first-child {
+    margin: 0;
 }
-#select-date>div:last-child>div{
-    width:50%;
+#select-date>div:last-child {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
 }
-#events  div:first-child form{
-    margin-left:50px;
-    margin-right:5px;
+#select-date>div:last-child>div {
+    width: 50%;
+}
+#events div:first-child form {
+    margin-left: 50px;
+    margin-right: 5px;
 }

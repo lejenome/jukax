@@ -13,6 +13,16 @@ var Storages = { //where to store user data
     indexedDB: false, //TODO: should i support indexedDB 
     Kii: false
 };
+var isLogin = false;
+if (window.localStorage) {
+    var keepLogin = (window.localStorage.keepLogin === "true");
+    window.localStorage.keepLogin = keepLogin; //if localStorage.keepLogin not defined yet
+    if (!keepLogin) {
+        window.localStorage.loginToken = null;
+    }
+}
+
+
 
 "use strict";
 //disable var++ errors on JSLint
@@ -52,6 +62,10 @@ var accountCreate = function (username, password, fn) {
         user = KiiUser.userWithUsername(username, password);
         user.register({
             success: function (Auser) {
+                if (window.localStorage.keepLogin === "true") {
+                    window.localStorage.loginToken = Auser.getAccessToken();
+                }
+                isLogin = true;
                 bucket = Auser.bucketWithName("data");
                 data = bucket.createObject();
                 data.set("data", {});
@@ -100,9 +114,13 @@ var accountCreate = function (username, password, fn) {
 
 var accountLogin = function (username, password, fn) {
     fn = typeof fn !== 'undefined' ? fn : {};
-    KiiUser.authenticate(username, password, {
+    var callBack = {
         success: function (Auser) {
             user = Auser;
+            if (window.localStorage.keepLogin === "true") {
+                window.localStorage.loginToken = user.getAccessToken();
+            }
+            isLogin = true;
             bucket = user.bucketWithName("data");
             var query = KiiQuery.queryWithClause(),
                 queryCallbacks = {
@@ -163,14 +181,33 @@ var accountLogin = function (username, password, fn) {
                 });
             }
         }
-    });
+    };
+    if (window.localStorage.keepLogin === "true" && window.localStorage.loginToken !== "null") {
+        KiiUser.authenticateWithToken(window.localStorage.loginToken, callBack);
+    } else {
+        KiiUser.authenticate(username, password, callBack);
+    }
+};
 
+var accountKeepLogin = function (keep) {
+    if (keep === undefined) {
+        return window.localStorage && window.localStorage.keepLogin === "true";
+    }
+    if (window.localStorage && keep === true) {
+        window.localStorage.keepLogin = true;
+    } else {
+        window.localStorage.keepLogin = false;
+        window.localStorage.loginToken = null;
+    }
 };
 
 var accountLogout = function () {
     data.save({
         success: function () {
             KiiUser.logOut();
+            window.localStorage.keepLogin = false;
+            window.localStorage.loginToken = null;
+            isLogin = false;
         },
         failure: function () {
             KiiUser.logOut();
@@ -183,6 +220,9 @@ var accountDelete = function (fn) {
     user.delete({
         success: function () {
             if (fn.hasOwnProperty("success")) {
+                window.localStorage.keepLogin = false;
+                window.localStorage.loginToken = null;
+                isLogin = false;
                 fn.success();
             }
         },
@@ -281,7 +321,7 @@ eventsNew = eventsUpdate = function (YMD, event) { //YMD : Year+Month+Day String
     if (!eventsData.hasOwnProperty(YMD)) {
         eventsData[YMD] = [];
     }
-    if (event.hasOwnProperty("created") || event.created === null) {
+    if (!event.hasOwnProperty("created") || event.created === null) {
         //eventIndex=-1;
         event.created = new Date().getTime();
     } else {
@@ -367,7 +407,7 @@ var eventsObject = function () {
 };
 
 var eventsGet = function (YMD, created) {
-    if (!data.get("data").hasOwnProperty(YMD)) {
+    if (!isLogin || !data.get("data").hasOwnProperty(YMD)) {
         return null;
     }
     if (created !== undefined) {
@@ -389,9 +429,15 @@ var eventsGet = function (YMD, created) {
 };
 
 var dataGet = function () {
+    if (!isLogin) {
+        return null;
+    }
     return data;
 };
 var userGet = function () {
+    if (!isLogin) {
+        return null;
+    }
     return user;
 };
 
@@ -420,5 +466,6 @@ var jukax = window.jukax = {
     eventsDelete: eventsDelete,
     eventsObject: eventsObject,
     eventsGet: eventsGet,
-    storagesSet: storagesSet
+    storagesSet: storagesSet,
+    accountKeepLogin: accountKeepLogin
 };

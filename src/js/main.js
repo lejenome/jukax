@@ -22,11 +22,12 @@ $(function () {
             time: $("#time"),
             repeat: "once",
             reminder: "no",
-            level: $("#level-A"),
+            level: "A",
             created: null
         },
         //functions list
         daySelectAction,
+        selectedDay, //point to selected day on cal
         date = new Date(),
         //months US short symbol
         months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
@@ -40,6 +41,10 @@ $(function () {
 
     // when a day from Cal selected
     daySelectAction = function () {
+        if (selectedDay) {
+            selectedDay.removeClass("selected");
+        }
+        selectedDay = $(this).addClass("selected");
         day = $(this).text();
         listview.addClass("hiden");
         updateListview();
@@ -81,6 +86,7 @@ $(function () {
             i,
             row,
             link,
+            titleField,
             linkEvent = function () {
                 editEvent($(this).data("created"), YMD);
             };
@@ -96,7 +102,12 @@ $(function () {
                     row.addClass("tag-A");
                 }
                 $(link).data("created", events[i].created);
-                $(link).append("<h3>" + events[i].title + "<small>  (" + events[i].where + ")</small></h3>");
+                titleField = "<h3>" + (events[i].title ? events[i].title : "Unidentified");
+                if (events[i].where) {
+                    titleField += "<small>  (" + events[i].where + ")</small>";
+                }
+                titleField += "</h3>";
+                $(link).append(titleField);
                 $(link).append("<p>" + events[i].note + "</p>");
                 $(link).append($("<p></p>").attr("class", "ui-li-aside").text(events[i].time));
                 $(row).append(link);
@@ -188,9 +199,10 @@ $(function () {
             form.where.val(e.where);
             form.note.val(e.note);
             form.time.val(e.time);
-            /*form.repeat = $('#repeat option[value="'+e.repeat+'"]').attr("selected", true).checkboxradio("refresh").val();
-             form.reminder = $('#reminder option[value="'+e.reminder+'"]').attr("selected", true).val();*/
-            form.level = $("#level-radio :radio").attr("checked", false).closest("#level-radio").find("#level-" + e.level).attr("checked", true);
+            /*form.repeat = $('#repeat option[value="'+e.repeat+'"]').prop("checked", true).checkboxradio("refresh").val();
+             form.reminder = $('#reminder option[value="'+e.reminder+'"]').prop("checked", true).val();*/
+            form.level = e.level;
+            $("#level-" + e.level).prop("checked", true);
             form.created = e.created;
             $("#delete").click(function () {
                 deleteEvent(created, YMD);
@@ -218,7 +230,8 @@ $(function () {
         form.where.val("");
         form.note.val("");
         form.time.val(getHM());
-        form.level = $("#level-radio :radio").attr("checked", false).closest("#level-radio").find("#level-A").val();
+        form.level = "A";
+        $("#level-A").prop("checked", true);
         form.created = null;
         $("#delete").hide();
         $.mobile.changePage("#eventPage");
@@ -234,20 +247,27 @@ $(function () {
             repeat: "once",
             reminder: "no",
             level: $("#level-radio input:checked").val(),
-            created: form.createdd
+            created: form.created
         };
         jukax.eventsUpdate(year + month + day, event);
-        updateListview();
-        $.mobile.changePage(lastPage);
-    }
-
-    function deleteEvent(created, YMD) {
-        jukax.eventsDelete(YMD, created);
-        updateListview();
         if (lastPage == "#events") {
             buildeventsList();
         }
         $.mobile.changePage(lastPage);
+        updateListview();
+        selectedDay.addClass("date-has-event");
+    }
+
+    function deleteEvent(created, YMD) {
+        jukax.eventsDelete(YMD, created);
+        if (lastPage == "#events") {
+            buildeventsList();
+        }
+        $.mobile.changePage(lastPage);
+        updateListview();
+        if (!jukax.eventsGet(YMD)) {
+            selectedDay.removeClass("date-has-event");
+        }
     }
 
     function confirmAndDelete(listitem, transition) {
@@ -280,6 +300,9 @@ $(function () {
                 listitem.remove();
                 listview.listview("refresh");
             }
+            if (!jukax.eventsGet(year + month + day)) {
+                selectedDay.removeClass("date-has-event");
+            }
         });
         // Remove active state and unbind when the cancel button is clicked
         $("#confirmDelete .cancel").on("click", function () {
@@ -297,18 +320,21 @@ $(function () {
             link,
             datesData,
             date,
+            titleField,
             linkEvent = function () {
                 editEvent($(this).data("created"), $(this).data("date"));
             };
         evlist.empty();
-        datesData = jukax.dataGet().get("data");
+        if (jukax.dataGet()) {
+            datesData = jukax.dataGet().get("data");
+        }
         for (date in datesData) {
             if (!datesData.hasOwnProperty(date)) {
                 events = null;
             }
             events = jukax.eventsGet(date);
             if (events) {
-                evlist.append($("<li></li>").data("role", "list-divider").data("theme", "a").text(date.substring(6) + "/" + date.substr(4, 2) + "/" + date.substr(0, 4)).append($("<span></span>").attr("class", "ui-li-count").data("theme", "a").text(events.length.toString())));
+                evlist.append($("<li></li>").data("date", date).data("role", "list-divider").data("theme", "a").text(date.substring(6) + "/" + date.substr(4, 2) + "/" + date.substr(0, 4)).append($("<span></span>").attr("class", "ui-li-count").data("theme", "a").text(events.length.toString())));
 
                 for (i = 0; i < events.length; i++) {
                     row = $("<li></li>");
@@ -322,7 +348,13 @@ $(function () {
                     }
                     $(link).data("created", events[i].created);
                     $(link).data("date", date);
-                    $(link).append("<h3>" + events[i].title + "<small>  (" + events[i].where + ")</small></h3>");
+                    $(link).data("created", events[i].created);
+                    titleField = "<h3>" + (events[i].title ? events[i].title : "Unidentified");
+                    if (events[i].where) {
+                        titleField += "<small>  (" + events[i].where + ")</small>";
+                    }
+                    titleField += "</h3>";
+                    $(link).append(titleField);
                     $(link).append("<p>" + events[i].note + "</p>");
                     $(link).append($("<p></p>").attr("class", "ui-li-aside").text(events[i].time));
                     $(row).append(link);
@@ -334,8 +366,8 @@ $(function () {
         lastPage = "#events";
         evlist.listview("refresh");
         $.mobile.loading("hide");
-        // Add event delete by swaping left/right on supported devices
-        /*$(document).on("swipeleft swiperight", "#eventsList li", function (event) {
+        // TODO: Add event delete by swaping left/right on supported devices
+        /*$(document).on("swipeleft swiperight", "#eventsList li:not(.ui-li-has-count)", function (event) {
             var listitem = $(this),
                 // These are the classnames used for the CSS transition
                 dir = event.type === "swipeleft" ? "left" : "right",
@@ -346,6 +378,7 @@ $(function () {
     }
 
     function confirmAndDeleteFromEventsList(listitem, transition) {
+
         var eventsList = $("#eventsList");
         // Highlight the list item that will be removed
         listitem.children(".ui-btn").addClass("ui-btn-active");
@@ -353,7 +386,12 @@ $(function () {
         $("#confirmDeleteFromEventsList").popup("open");
         // Proceed when the user confirms
         $("#confirmDeleteFromEventsList .yes").on("click", function () {
-            jukax.eventsDelete(year + month + day, listitem.children("a").data("created"));
+            var itemDateCounter = listitem.prev();
+            if (!itemDateCounter.is(".ui-li-has-count")) {
+                itemDateCounter = listitem.prevAll(".ui-li-has-count").last();
+            }
+            var itemDate = itemDateCounter.data("date");
+            jukax.eventsDelete(itemDate, listitem.children("a").data("created"));
             // Remove with a transition
             if (transition) {
                 listitem
@@ -376,7 +414,17 @@ $(function () {
                 listitem.remove();
                 eventsList.listview("refresh");
             }
-            buildeventsList();
+            if (!itemDateCounter.next() || itemDateCounter.next().is(".ui-li-has-count")) {
+                itemDateCounter.remove();
+            }
+            if (year + month + day === itemDate) {
+                updateListview();
+                if (!jukax.eventsGet(year + month + day)) {
+                    selectedDay.removeClass("date-has-event");
+                }
+            }
+            //buildeventsList();
+            //TODO: when not selected day but no longer has events
         });
         // Remove active state and unbind when the cancel button is clicked
         $("#confirmDeleteFromEventsList .cancel").on("click", function () {
@@ -390,6 +438,7 @@ $(function () {
         $.mobile.loading("show");
         var username = $("#username").val(),
             password = $("#password").val();
+        jukax.accountKeepLogin($('#keepLogin').prop("checked"));
         try {
             jukax.accountCreate(username, password, {
                 success: function () {
@@ -418,6 +467,7 @@ $(function () {
         $.mobile.loading("show");
         var username = $("#username").val(),
             password = $("#password").val();
+        jukax.accountKeepLogin($('#keepLogin').prop("checked"));
         jukax.accountLogin(username, password, {
             success: function () {
                 buildCal(year, month);
@@ -437,22 +487,49 @@ $(function () {
         });
 
     }
+
+    function logout() {
+        jukax.accountLogout();
+        $.mobile.changePage("#login");
+        date = new Date();
+        year = date.getFullYear().toString();
+        month = (date.getMonth() + 1).toString();
+        day = date.getDate().toString();
+    }
+
+    ////
     jukax.storagesSet({
         Kii: true
     });
     jukax.initializeKii("ea716d13", "60ac553a1539a79cf9f44a98642be971");
 
+    buildCal(year, month);
+    $("#select-month").val(months[parseInt(month, 10) - 1]);
+    $("#select-year").val(year);
+    if (jukax.accountKeepLogin()) {
+        $.mobile.changePage("#cal");
+        $.mobile.loading("show");
+        jukax.accountLogin(null, null, {
+            success: function () {
+                buildCal(year, month);
+                $.mobile.loading("hide");
+            },
+            failure: function () {
+                $.mobile.changePage("#login");
+                $.mobile.loading("hide");
+                jukax.accountKeepLogin("false");
+            }
+        });
+    } else {
+        $.mobile.changePage("#login");
+    }
+
+
     //Click Events
     $("#register-button").click(performRegistration);
     $("#login-button").click(performLogin);
-    $("#logout").click(function () {
-        jukax.accountLogout();
-        $.mobile.changePage("#login");
-    });
-    $("#logout2").click(function () {
-        jukax.accountLogout();
-        $.mobile.changePage("#login");
-    });
+    $("#logout").click(logout);
+    $("#logout2").click(logout);
     $("#deleteaccountbutton").click(function () {
         jukax.accountDelete({
             success: function () {
@@ -578,7 +655,7 @@ $(function () {
         touchbehavior: true
     });*/
     $("#monthCheckbox").click(function () {
-        selectDate.toggle(navigator.userAgent.indexOf('Firefox')>0?0:400);
+        selectDate.toggle(400);
     });
     $("#select-year").change(function () {
         year = $(this).val();
@@ -591,4 +668,6 @@ $(function () {
         }
         buildCal(year, month);
     });
+
+
 });
