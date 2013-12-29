@@ -1,3 +1,15 @@
+//disable var++ errors on JSLint
+/*jslint plusplus: true */
+//stop some "<X> was used before it was def" error
+/*jslint devel: true */
+/*jslint browser: true */
+/*global KiiSite */
+/*global KiiUser */
+/*global Kii */
+/*global KiiQuery */
+/* global localForage */
+"use strict";
+
 var user, data, bucket;
 var ERROR_SAVING_DATA = 3;
 var ERROR_CREATING_USER = 4;
@@ -9,39 +21,53 @@ var ERROR_UNVALID_INPUT = 9;
 var ERROR_UPDATING_PASSWORD = 10;
 var ERROR_CLEANINGUP_EVENTS = 11;
 var Storages = { //where to store user data
-    local: false, //TODO: add support for SessionStorage for offline (will be set to True when implemented)
-    indexedDB: false, //TODO: should i support indexedDB 
+    local: false, //TODO: add support for localForge (IndexedDB/localStorage) for offline support
     Kii: false
 };
-var isLogin = false;
-if (window.localStorage) {
-    var keepLogin = (window.localStorage.keepLogin === "true");
-    window.localStorage.keepLogin = keepLogin; //if localStorage.keepLogin not defined yet
-    if (!keepLogin) {
-        window.localStorage.loginToken = null;
+var whenReady = null,
+    alreadyReady = false;
+var isLogin = false,
+    keepLogin = false,
+    loginToken = null;
+localForage.getItem("keepLogin", function (item) {
+    if (!item) { // maybe not defined yet
+        item = false;
+        localForage.setItem("keepLogin", false, function () {
+            localForage.setItem("loginToken", null, itsReady);
+        });
+    } else {
+        keepLogin = item;
+        localForage.getItem("loginToken", function (item2) {
+            loginToken = item2;
+            if (!item2) {
+                keepLogin = false;
+                localForage.setItem("keepLogin", false, itsReady);
+            } else {
+                itsReady();
+            }
+        });
     }
-}
+});
+var debug = true;
 
+var ready = function (fn) {
+    if (alreadyReady) {
+        fn();
+    } else {
+        whenReady = fn;
+    }
+};
+var itsReady = function () {
+    alreadyReady = true;
+    if (whenReady) {
+        whenReady();
 
-
-"use strict";
-//disable var++ errors on JSLint
-/*jslint plusplus: true */
-//stop some "<X> was used before it was def" error
-/*jslint devel: true */
-/*jslint browser: true */
-/*global KiiSite */
-/*global KiiUser */
-/*global Kii */
-/*global KiiQuery */
-
+    }
+};
 var storagesSet = function (storages) {
     storages = typeof storages !== 'undefined' ? storages : {};
     if (storages.hasOwnProperty("local")) {
         Storages.local = storages.local;
-    }
-    if (storages.hasOwnProperty("indexedDB")) {
-        Storages.indexedDB = storages.indexedDB;
     }
     if (storages.hasOwnProperty("Kii")) {
         Storages.Kii = storages.Kii;
@@ -52,6 +78,7 @@ var initializeKii = function (appID, appKey, kii_site) {
         kii_site = typeof kii_site !== 'undefined' ? kii_site : KiiSite.US;
         Kii.initializeWithSite(appID, appKey, kii_site);
     } else {
+        debug(1, "Kii is not set as a Storage");
         throw "Kii is not set as a Storage";
     }
 };
@@ -62,8 +89,10 @@ var accountCreate = function (username, password, fn) {
         user = KiiUser.userWithUsername(username, password);
         user.register({
             success: function (Auser) {
-                if (window.localStorage.keepLogin === "true") {
-                    window.localStorage.loginToken = Auser.getAccessToken();
+                debug("registred user");
+                if (keepLogin) {
+                    loginToken = Auser.getAccessToken();
+                    localForage.setItem("loginToken", loginToken);
                 }
                 isLogin = true;
                 bucket = Auser.bucketWithName("data");
@@ -71,14 +100,17 @@ var accountCreate = function (username, password, fn) {
                 data.set("data", {});
                 data.saveAllFields({
                     success: function (theObject) {
+                        debug("all data fields saved");
                         theObject.refresh({
                             success: function (obj) {
+                                debug("data refreshed");
                                 data = obj;
                                 if (fn.hasOwnProperty("success")) {
                                     fn.success();
                                 }
                             },
                             failure: function (obj, error) {
+                                debug(7, [error]);
                                 if (fn.hasOwnProperty("failure")) {
                                     fn.failure({
                                         type: 7,
@@ -90,6 +122,7 @@ var accountCreate = function (username, password, fn) {
                     },
                     failure: function (theObject, errorString) {
                         if (fn.hasOwnProperty("failure")) {
+                            debug(3, [errorString]);
                             fn.failure({
                                 type: 3,
                                 message: errorString
@@ -99,6 +132,7 @@ var accountCreate = function (username, password, fn) {
                 });
             },
             failure: function (theUser, errorString) {
+                debug(4, [errorString]);
                 if (fn.hasOwnProperty("failure")) {
                     fn.failure({
                         type: 4,
@@ -108,6 +142,7 @@ var accountCreate = function (username, password, fn) {
             }
         });
     } catch (e) {
+        debug(1, e);
         throw e.message;
     }
 };
@@ -116,28 +151,34 @@ var accountLogin = function (username, password, fn) {
     fn = typeof fn !== 'undefined' ? fn : {};
     var callBack = {
         success: function (Auser) {
+            debug("loged user");
             user = Auser;
-            if (window.localStorage.keepLogin === "true") {
-                window.localStorage.loginToken = user.getAccessToken();
+            if (keepLogin) {
+                loginToken = Auser.getAccessToken();
+                localForage.setItem("loginToken", loginToken);
             }
             isLogin = true;
             bucket = user.bucketWithName("data");
             var query = KiiQuery.queryWithClause(),
                 queryCallbacks = {
                     success: function (queryPerformed, r /*, nextQuery*/ ) {
+                        debug("Queryed for data");
                         r[0].refresh({
                             success: function (obj) {
+                                debug("data refreshed: " + obj.toString());
                                 data = obj;
                                 if (typeof data.get("data") === 'undefined') {
                                     data.set("data", {});
                                     data.save({
                                         success: function (obj) {
+                                            debug("data saved");
                                             data = obj;
                                             if (fn.hasOwnProperty("success")) {
                                                 fn.success();
                                             }
                                         },
                                         failure: function (obj, errorString) {
+                                            debug(3, [errorString]);
                                             if (fn.hasOwnProperty("failure")) {
                                                 fn.failure({
                                                     type: 3,
@@ -153,6 +194,7 @@ var accountLogin = function (username, password, fn) {
 
                             },
                             failure: function (obj, errorString) {
+                                debug(7, [errorString]);
                                 if (fn.hasOwnProperty("failure")) {
                                     fn.failure({
                                         type: 7,
@@ -163,6 +205,7 @@ var accountLogin = function (username, password, fn) {
                         });
                     },
                     failure: function (queryPerformed, errorString) {
+                        debug(5, [errorString]);
                         if (fn.hasOwnProperty("failure")) {
                             fn.failure({
                                 type: 5,
@@ -174,6 +217,7 @@ var accountLogin = function (username, password, fn) {
             bucket.executeQuery(query, queryCallbacks);
         },
         failure: function (theUser, errorString) {
+            debug(6, [errorString]);
             if (fn.hasOwnProperty("failure")) {
                 fn.failure({
                     type: 6,
@@ -182,35 +226,67 @@ var accountLogin = function (username, password, fn) {
             }
         }
     };
-    if (window.localStorage.keepLogin === "true" && window.localStorage.loginToken !== "null") {
-        KiiUser.authenticateWithToken(window.localStorage.loginToken, callBack);
+    if (loginToken) {
+        debug("Loging with Token");
+        KiiUser.authenticateWithToken(loginToken, callBack);
     } else {
+        debug("Loging with username/pw");
         KiiUser.authenticate(username, password, callBack);
     }
 };
 
-var accountKeepLogin = function (keep) {
+var accountKeepLogin = function (keep, callback) {
     if (keep === undefined) {
-        return window.localStorage && window.localStorage.keepLogin === "true";
+        return keepLogin && loginToken;
     }
-    if (window.localStorage && keep === true) {
-        window.localStorage.keepLogin = true;
+    if (keep) {
+        debug("KeepLogin set to True");
+        keepLogin = true;
+        localForage.setItem("keepLogin", true, callback);
     } else {
-        window.localStorage.keepLogin = false;
-        window.localStorage.loginToken = null;
+        debug("KeepLogin set to False");
+        keepLogin = false;
+        loginToken = false;
+        localForage.setItem("keepLogin", false, function () {
+            localForage.setItem("loginToken", null, callback);
+        });
     }
 };
 
 var accountLogout = function () {
     data.save({
         success: function () {
+            debug("data saved");
             KiiUser.logOut();
-            window.localStorage.keepLogin = false;
-            window.localStorage.loginToken = null;
+            debug("logged out");
+            accountKeepLogin(false);
             isLogin = false;
         },
         failure: function () {
+            debug(3);
             KiiUser.logOut();
+            debug("logged out");
+        }
+    });
+};
+
+var accoutSave = function (fn) {
+    fn = typeof fn !== 'undefined' ? fn : {};
+    data.save({
+        success: function () {
+            debug("data saved");
+            if (fn.hasOwnProperty("success")) {
+                fn.success();
+            }
+        },
+        failure: function (obj, errorString) {
+            debug(3, [errorString]);
+            if (fn.hasOwnProperty("failure")) {
+                fn.failure({
+                    type: 3,
+                    message: errorString
+                });
+            }
         }
     });
 };
@@ -219,14 +295,15 @@ var accountDelete = function (fn) {
     fn = typeof fn !== 'undefined' ? fn : {};
     user.delete({
         success: function () {
+            debug("user deleted");
             if (fn.hasOwnProperty("success")) {
-                window.localStorage.keepLogin = false;
-                window.localStorage.loginToken = null;
+                accountKeepLogin(false);
                 isLogin = false;
                 fn.success();
             }
         },
         failure: function (user, errorString) {
+            debug(8, [errorString]);
             if (fn.hasOwnProperty("failure")) {
                 fn.failure({
                     type: 8,
@@ -239,14 +316,19 @@ var accountDelete = function (fn) {
 
 var accountUpdatePassword = function (old_pw, new_pw, fn) {
     try {
-        var name = user.getUsername();
         if (old_pw !== "" && old_pw !== null && new_pw !== "" && new_pw !== null) {
             user.updatePassword(old_pw, new_pw, {
                 success: function () {
-                    accountLogin(name, new_pw, fn);
+                    debug("password updated");
+                    accountKeepLogin(false);
+                    isLogin = false;
+                    if (fn.hasOwnProperty("success")) {
+                        fn.success();
+                    }
                 },
                 failure: function (user, errorString) {
                     if (fn.hasOwnProperty("failure")) {
+                        debug(10, [errorString]);
                         fn.failure({
                             type: 10,
                             message: errorString
@@ -263,6 +345,7 @@ var accountUpdatePassword = function (old_pw, new_pw, fn) {
             }
         }
     } catch (e) {
+        debug(1, e);
         throw e.message;
     }
 };
@@ -270,19 +353,23 @@ var accountUpdatePassword = function (old_pw, new_pw, fn) {
 var eventsCleanup = function (fn) {
     data.delete({
         success: function () {
+            debug("data removed");
             data = user.bucketWithName("data").createObject();
             data.set("data", {});
             data.save({
                 success: function (o) {
+                    debug("data saved");
                     data = o;
                     data.refresh({
                         success: function (d) {
+                            debug("data refreshed");
                             data = d;
                             if (fn.hasOwnProperty("success")) {
                                 fn.success();
                             }
                         },
                         failure: function (obj, errorString) {
+                            debug(7, [errorString]);
                             if (fn.hasOwnProperty("failure")) {
                                 fn.failure({
                                     type: 7,
@@ -293,6 +380,7 @@ var eventsCleanup = function (fn) {
                     });
                 },
                 failure: function (obj, errorString) {
+                    debug(3, [errorString]);
                     if (fn.hasOwnProperty("failure")) {
                         fn.failure({
                             type: 3,
@@ -303,6 +391,7 @@ var eventsCleanup = function (fn) {
             });
         },
         failure: function (obj, errorString) {
+            debug(11, [errorString]);
             if (fn.hasOwnProperty("failure")) {
                 fn.failure({
                     type: 11,
@@ -441,6 +530,102 @@ var userGet = function () {
     return user;
 };
 
+var debug = function (val1, val2) {
+    if (!debug) {
+        return;
+    }
+    if (val2 === undefined) {
+        if (typeof (val1) === "boolean") {
+            if (val1) {
+                console.info("[JUKAX:INFO]", "TRUE");
+            } else {
+                console.error("[JUKAX:ERROR]", "FALSE");
+            }
+        } else if (typeof (val1) === "number") {
+            switch (val1) {
+            case 3:
+                console.error("[JUKAX:ERROR] 3:ERROR_SAVING_DATA");
+
+                break;
+            case 4:
+                console.error("[JUKAX:ERROR] 4:ERROR_CREATING_USER");
+                break;
+            case 5:
+                console.error("[JUKAX:ERROR] 5:ERROR_QUERY_FAILURE");
+                break;
+            case 6:
+                console.error("[JUKAX:ERROR] 6:ERROR_LOGIN");
+                break;
+            case 7:
+                console.error("[JUKAX:ERROR] 7:ERROR_REFRESHING_DATA");
+                break;
+            case 8:
+                console.error("[JUKAX:ERROR] 8:ERROR_DELETING_USER");
+                break;
+            case 9:
+                console.error("[JUKAX:ERROR] 9:ERROR_UNVALID_INPUT");
+                break;
+            case 10:
+                console.error("[JUKAX:ERROR] 10:ERROR_UPDATING_PASSWORD");
+                break;
+            case 11:
+                console.error("[JUKAX:ERROR] 11:ERROR_CLEANINGUP_EVENTS");
+                break;
+            default:
+                console.info("[JUKAX:INFO]", val1);
+                break;
+            }
+        } else if (typeof (val1) === "string") {
+            console.info("[JUKAX:INFO]", val1);
+        } else {
+            console.info("[JUKAX:INFO]", val1.toString());
+        }
+    } else {
+        if (typeof (val1) === "number" && typeof (val2 === "array")) {
+            switch (val1) {
+            case 3:
+                console.error("[JUKAX:ERROR] 3:ERROR_SAVING_DATA", val2);
+
+                break;
+            case 4:
+                console.error("[JUKAX:ERROR] 4:ERROR_CREATING_USER", val2);
+                break;
+            case 5:
+                console.error("[JUKAX:ERROR] 5:ERROR_QUERY_FAILURE", val2);
+                break;
+            case 6:
+                console.error("[JUKAX:ERROR] 6:ERROR_LOGIN", val2);
+                break;
+            case 7:
+                console.error("[JUKAX:ERROR] 7:ERROR_REFRESHING_DATA", val2);
+                break;
+            case 8:
+                console.error("[JUKAX:ERROR] 8:ERROR_DELETING_USER", val2);
+                break;
+            case 9:
+                console.error("[JUKAX:ERROR] 9:ERROR_UNVALID_INPUT", val2);
+                break;
+            case 10:
+                console.error("[JUKAX:ERROR] 10:ERROR_UPDATING_PASSWORD", val2);
+                break;
+            case 11:
+                console.error("[JUKAX:ERROR] 11:ERROR_CLEANINGUP_EVENTS", val2);
+                break;
+            default:
+                console.info("[JUKAX:INFO]", val1, val2);
+                break;
+            }
+        } else if (val1 === 1) {
+            console.error("[JUKAX:ERROR]", val2);
+        } else {
+            if (val1 === val2) {
+                console.info("[JUKAX:info]", val1, "====", val2);
+            } else {
+                console.error("[JUKAX:ERROR]", val1, "!==", val2);
+            }
+        }
+    }
+};
 var jukax = window.jukax = {
     userGet: userGet,
     dataGet: dataGet,
@@ -467,5 +652,8 @@ var jukax = window.jukax = {
     eventsObject: eventsObject,
     eventsGet: eventsGet,
     storagesSet: storagesSet,
-    accountKeepLogin: accountKeepLogin
+    accountKeepLogin: accountKeepLogin,
+    accoutSave: accoutSave,
+    ready: ready,
+    debug: debug
 };

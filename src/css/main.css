@@ -244,7 +244,7 @@ only screen and (max-device-width: 370px) {
     content: "";
     top: 1px;
     bottom: 1px;
-    left: 0px;
+    left: 0;
     width: 5px;
     background-color: gray;
 }
@@ -299,4 +299,15 @@ only screen and (max-device-width: 370px) {
 #events div:first-child form {
     margin-left: 50px;
     margin-right: 5px;
+}
+/*****************************************/
+html{
+    overflow:auto;
+    webkit-overflow-scrolling: touch;
+}
+#cal>div+div,
+#events>div+div {
+    text-overflow: ellipsis;
+    overflow: visible;
+    webkit-overflow-scrolling: touch;
 }

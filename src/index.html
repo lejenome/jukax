@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="description" content="Simple Calendar Web Application" />
+    <link rel="shortcut icon" href="img/favicon.ico" />
     <title>
         Jukax utility
     </title>
@@ -26,6 +27,8 @@
     <!--media="screen" -->
     <!--v2.1.11-->
     <script src="js/KiiSDK.js" type="text/javascript"></script>
+    <!--last commit Dec 03 2013-->
+    <script src="js/localForage.js" type="text/javascript"></script>
     <script src="js/jukax.js" type="text/javascript"></script>
     <script src="js/main.js" type="text/javascript"></script>
 </head>
@@ -41,7 +44,7 @@
         <!-- /header -->
 
         <!-- content -->
-        <form data-role="content" action="#" method="post" data-ajax="false" onsubmit="return false;">
+        <form data-role="content" data-ajax="false">
 
             <div style="margin:18px;">
                 <label for="username">Enter a Username:</label>
@@ -90,7 +93,7 @@
             <fieldset data-role="controlgroup" data-type="horizontal" id="select-date">
                 <legend class="ui-hidden-accessible">Change Date:</legend>
                 <label for="select-month">Month</label>
-                <select name="select-month" id="select-month" data-native-menu="false">
+                <select name="select-month" id="select-month" data-native-menu="true">
                     <option value="Jan">Jan</option>
                     <option value="Feb">Feb</option>
                     <option value="Mar">Mar</option>
@@ -105,7 +108,7 @@
                     <option value="Dec">Dec</option>
                 </select>
                 <label for="select-year">Year</label>
-                <select name="select-year" id="select-year" data-native-menu="false">
+                <select name="select-year" id="select-year" data-native-menu="true">
                     <option value="2000">2000</option>
                     <option value="2001">2001</option>
                     <option value="2002">2002</option>
@@ -158,7 +161,7 @@
         <!-- /content -->
         <!-- popup -->
         <div id="confirmDelete" class="ui-content" data-role="popup" data-theme="a">
-            <p class="question">Are you sure you want to delete:</p>
+            <p class="question">Are you sure you want to delete event:</p>
             <div class="ui-grid-a">
                 <div class="ui-block-a">
                     <a class="yes ui-btn ui-corner-all ui-mini ui-btn-a" data-rel="back">Yes</a>
@@ -209,7 +212,7 @@
         <!-- /header -->
         <!-- content -->
         <div data-role="content">
-            <form  action="#" method="post" data-ajax="false" onsubmit="return false;">
+            <form  data-ajax="false">
                 <label for="title" class="ui-hidden-accessible">Title:</label>
                 <input required name="title" id="title" pattern=".+" placeholder="Title" value="" type="text" />
 
@@ -264,7 +267,7 @@
     <div id="events" data-role="page" data-theme="a">
         <div data-role="header" data-theme="a" data-position="fixed">
             <a href="#nav-panel2" data-icon="bars" data-iconpos="notext">Menu</a>
-            <form class="ui-filterable ui-mini " data-ajax="false" onsubmit="return false;">
+            <form class="ui-filterable ui-mini " data-ajax="false">
                 <input id="filterBasic-input" data-type="search">
             </form>
         </div>
@@ -297,7 +300,7 @@
         <!-- /panel -->
         <!-- popup -->
         <div id="confirmDeleteFromEventsList" class="ui-content" data-role="popup" data-theme="a">
-            <p class="question">Are you sure you want to delete:</p>
+            <p class="question">Are you sure you want to delete event:</p>
             <div class="ui-grid-a">
                 <div class="ui-block-a">
                     <a class="ui-btn yes ui-corner-all ui-mini ui-btn-a" data-rel="back">Yes</a>
@@ -336,7 +339,7 @@
                 </span>
             </a>
 
-            <a class="ui-btn ui-btn-up-a ui-shadow ui-btn-corner-all" data-wrapperels="span" data-iconshadow="true" data-shadow="true" data-corners="true" href="#" data-role="button" data-rel="back" data-theme="a">
+            <a class="ui-btn ui-btn-up-a ui-shadow ui-btn-corner-all" data-wrapperels="span" data-iconshadow="true" data-shadow="true" data-corners="true" href="#" data-role="button" data-theme="a" data-rel="back">
                 <span class="ui-btn-inner">
                     <span class="ui-btn-text">Cancel</span>
                 </span>
@@ -347,13 +350,13 @@
     <div data-role="page" id="deletedata" data-theme="a">
         <div data-role="content">
             <h3>Delete Data?</h3>
-            <p id="deletedatamessage" style="display:none;"></p>
+            <p id="deletedatamessage" style="display:none;" class="noteBar ui-bar ui-bar-a"></p>
             <a id="deletedatabutton" class="ui-btn ui-btn-up-b ui-shadow ui-btn-corner-all" data-wrapperels="span" data-iconshadow="true" data-shadow="true" data-corners="true" href="#d" data-role="button" data-theme="a">
                 <span class="ui-btn-inner">
                     <span class="ui-btn-text">Yes</span>
                 </span>
             </a>
-            <a class="ui-btn ui-btn-up-a ui-shadow ui-btn-corner-all" data-wrapperels="span" data-iconshadow="true" data-shadow="true" data-corners="true" href="#" data-role="button" data-rel="back" data-theme="a">
+            <a class="ui-btn ui-btn-up-a ui-shadow ui-btn-corner-all" data-wrapperels="span" data-iconshadow="true" data-shadow="true" data-corners="true" href="#settings" data-role="button" data-theme="a">
                 <span class="ui-btn-inner">
                     <span class="ui-btn-text">Cancel</span>
                 </span>
@@ -361,8 +364,8 @@
         </div>
     </div>
     <div data-role="page" id="updatepassword" data-theme="a">
-        <form data-role="content" action="#" method="post" data-ajax="false" onsubmit="return false;">
-            <p id="updatepasswordmessage" style="display:none;"></p>
+        <form data-role="content" data-ajax="false">
+            <p id="updatepasswordmessage" style="display:none;" class="noteBar ui-bar ui-bar-a"></p>
             <label for="updatepasswordold" class="ui-hidden-accessible">Old password:</label>
             <input name="updatepasswordold" id="updatepasswordold" placeholder="Old password" value="" type="password" />
             <label for="updatepasswordnew" class="ui-hidden-accessible">Title:</label>
@@ -372,7 +375,7 @@
                     <span class="ui-btn-text">Update</span>
                 </span>
             </a>
-            <a class="ui-btn ui-btn-up-a ui-shadow ui-btn-corner-all" data-wrapperels="span" data-iconshadow="true" data-shadow="true" data-corners="true" href="#" data-role="button" data-rel="back">
+            <a class="ui-btn ui-btn-up-a ui-shadow ui-btn-corner-all" data-wrapperels="span" data-iconshadow="true" data-shadow="true" data-corners="true" href="#settings" data-role="button">
                 <span class="ui-btn-inner">
                     <span class="ui-btn-text">Cancel</span>
                 </span>
@@ -382,13 +385,13 @@
     <div data-role="page" id="deleteaccount" data-theme="a">
         <div data-role="content">
             <h3>Delete account?</h3>
-            <p id="deleteaccountmessage" style="display:none;"></p>
+            <p id="deleteaccountmessage" style="display:none;"  class="noteBar ui-bar ui-bar-a"></p>
             <a id="deleteaccountbutton" class="ui-btn ui-btn-up-b ui-shadow ui-btn-corner-all" data-wrapperels="span" data-iconshadow="true" data-shadow="true" data-corners="true" href="#" data-role="button">
                 <span class="ui-btn-inner">
                     <span class="ui-btn-text">Delete</span>
                 </span>
             </a>
-            <a class="ui-btn ui-btn-up-a ui-shadow ui-btn-corner-all" data-wrapperels="span" data-iconshadow="true" data-shadow="true" data-corners="true" href="#" data-role="button" data-rel="back">
+            <a class="ui-btn ui-btn-up-a ui-shadow ui-btn-corner-all" data-wrapperels="span" data-iconshadow="true" data-shadow="true" data-corners="true" href="#settings" data-role="button">
                 <span class="ui-btn-inner">
                     <span class="ui-btn-text">Cancel</span>
                 </span>

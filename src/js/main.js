@@ -203,13 +203,13 @@ $(function () {
              form.reminder = $('#reminder option[value="'+e.reminder+'"]').prop("checked", true).val();*/
             form.level = e.level;
             $("#level-" + e.level).prop("checked", true);
-            $("#level-radio").controlgroup("refresh");
             form.created = e.created;
             $("#delete").click(function () {
                 deleteEvent(created, YMD);
             });
             $("#delete").show();
             $.mobile.changePage("#eventPage");
+            $("#level-radio").controlgroup("refresh");
         }
     }
 
@@ -437,55 +437,65 @@ $(function () {
 
     function performRegistration() {
         $.mobile.loading("show");
-        var username = $("#username").val(),
-            password = $("#password").val();
-        jukax.accountKeepLogin($('#keepLogin').prop("checked"));
-        try {
-            jukax.accountCreate(username, password, {
-                success: function () {
-                    buildCal(year, month);
-                    $("#select-month").val(months[parseInt(month, 10) - 1]).selectmenu("refresh");
-                    $("#select-year").val(year).selectmenu("refresh");
-                    $.mobile.changePage("#cal");
-                    $("#username").val("");
-                    $("#password").val("");
+        jukax.accountKeepLogin(false, function () {
+            var username = $("#username").val(),
+                password = $("#password").val();
+            jukax.accountKeepLogin($('#keepLogin').prop("checked"), function () {
+                try {
+                    jukax.accountCreate(username, password, {
+                        success: function () {
+                            buildCal(year, month);
+                            $("#select-month").val(months[parseInt(month, 10) - 1]).selectmenu("refresh");
+                            $("#select-year").val(year).selectmenu("refresh");
+                            $.mobile.changePage("#cal");
+                            $("#username").val("");
+                            $("#password").val("");
+                            $.mobile.loading("hide");
+                        },
+                        failure: function (e) {
+                            $.mobile.loading("hide");
+                            if (e.type === jukax.ERROR_CREATING_USER) {
+                                alert("Unable to register: " + e.message);
+                            }
+                        }
+                    });
+                } catch (e) {
                     $.mobile.loading("hide");
-                },
-                failure: function (e) {
-                    $.mobile.loading("hide");
-                    if (e.type === jukax.ERROR_CREATING_USER) {
-                        alert("Unable to register: " + e.message);
-                    }
+                    alert("Unable to register: " + e.message);
                 }
             });
-        } catch (e) {
-            $.mobile.loading("hide");
-            alert("Unable to register: " + e.message);
-        }
+
+        });
+
     }
 
     function performLogin() {
         $.mobile.loading("show");
-        var username = $("#username").val(),
-            password = $("#password").val();
-        jukax.accountKeepLogin($('#keepLogin').prop("checked"));
-        jukax.accountLogin(username, password, {
-            success: function () {
-                buildCal(year, month);
-                $.mobile.changePage("#cal");
-                $("#select-month").val(months[parseInt(month, 10) - 1]).selectmenu("refresh");
-                $("#select-year").val(year).selectmenu("refresh");
-                $("#username").val("");
-                $("#password").val("");
-                $.mobile.loading("hide");
-            },
-            failure: function (e) {
-                $.mobile.loading("hide");
-                if (e.type === jukax.ERROR_LOGIN) {
-                    alert("Unable to login: " + e.message);
-                }
-            }
+        jukax.accountKeepLogin(false, function () {
+            var username = $("#username").val(),
+                password = $("#password").val();
+            jukax.accountKeepLogin($('#keepLogin').prop("checked"), function () {
+                jukax.accountLogin(username, password, {
+                    success: function () {
+                        buildCal(year, month);
+                        $.mobile.changePage("#cal");
+                        $("#select-month").val(months[parseInt(month, 10) - 1]).selectmenu("refresh");
+                        $("#select-year").val(year).selectmenu("refresh");
+                        $("#username").val("");
+                        $("#password").val("");
+                        $.mobile.loading("hide");
+                    },
+                    failure: function (e) {
+                        $.mobile.loading("hide");
+                        if (e.type === jukax.ERROR_LOGIN) {
+                            alert("Unable to login: " + e.message);
+                        }
+                    }
+                });
+            });
+
         });
+
 
     }
 
@@ -507,27 +517,29 @@ $(function () {
     buildCal(year, month);
     $("#select-month").val(months[parseInt(month, 10) - 1]);
     $("#select-year").val(year);
-    if (jukax.accountKeepLogin()) {
-        $.mobile.changePage("#cal");
-        $.mobile.loading("show", {
-            text: "Downloading Data...",
-            textVisible: true,
-            theme: "b"
-        });
-        jukax.accountLogin(null, null, {
-            success: function () {
-                buildCal(year, month);
-                $.mobile.loading("hide");
-            },
-            failure: function () {
-                $.mobile.changePage("#login");
-                $.mobile.loading("hide");
-                jukax.accountKeepLogin("false");
-            }
-        });
-    } else {
-        $.mobile.changePage("#login");
-    }
+    jukax.ready(function () {
+        if (jukax.accountKeepLogin()) {
+            $.mobile.changePage("#cal");
+            $.mobile.loading("show", {
+                text: "Downloading Data...",
+                textVisible: true,
+                theme: "b"
+            });
+            jukax.accountLogin(null, null, {
+                success: function () {
+                    buildCal(year, month);
+                    $.mobile.loading("hide");
+                },
+                failure: function () {
+                    $.mobile.changePage("#login");
+                    $.mobile.loading("hide");
+                    jukax.accountKeepLogin("false");
+                }
+            });
+        } else {
+            $.mobile.changePage("#login");
+        }
+    });
 
 
     //Click Events
@@ -538,14 +550,14 @@ $(function () {
     $("#deleteaccountbutton").click(function () {
         jukax.accountDelete({
             success: function () {
-                $("#deleteaccountmessage").text("Done!").css("color", "gree").show();
+                $("#deleteaccountmessage").text("Done!").css("color", "green").show(200, "linear");
                 setTimeout(function () {
                     $("#deleteaccountmessage").hide();
                     $.mobile.changePage("#login");
                 }, 2000);
             },
             failure: function () {
-                $("#deleteaccountmessage").text("Failed!").css("color", "red").show();
+                $("#deleteaccountmessage").text("Failed!").css("color", "red").show(200, "linear");
                 setTimeout(function () {
                     $("#deleteaccountmessage").hide();
                     $.mobile.loadPage("#login");
@@ -559,55 +571,59 @@ $(function () {
                 $("#updatepasswordold").val(),
                 $("#updatepasswordnew").val(), {
                     success: function () {
-                        $("#updatepasswordmessage").text("Done!").css("color", "gree").show();
+                        $("#updatepasswordmessage").text("Done! Relogin needed!").css("color", "green").show(200, "linear");
                         setTimeout(function () {
+                            jukax.accountLogout();
                             $("#updatepasswordmessage").hide();
+                            $.mobile.changePage("#login");
                         }, 3000);
+                        $("#updatepasswordnew").val("");
+                        $("#updatepasswordold").val("");
                     },
                     failure: function (e) {
                         if (e.type === jukax.ERROR_UNVALID_INPUT) {
                             alert(e.message);
                         } else if (e.type === jukax.ERROR_UPDATING_PASSWORD) {
-                            $("#updatepasswordmessage").text("Failed!").css("color", "red").show();
+                            $("#updatepasswordmessage").text("Failed!").css("color", "red").show(200, "linear");
                             setTimeout(function () {
                                 $("#updatepasswordmessage").hide();
                             }, 3000);
-                        } else {
-                            $("#updatepasswordmessage").text("Relogin needed!").css("color", "yellow").show();
-                            setTimeout(function () {
-                                $("#updatepasswordmessage").hide();
-                                $.mobile.changePage("#login");
-                            }, 3000);
+                            $("#updatepasswordnew").val("");
+                            $("#updatepasswordold").val("");
                         }
                     }
                 }
             );
         } catch (e) {
-            $("#updatepasswordmessage").text("Failed!").css("color", "red").show();
+            $("#updatepasswordmessage").text("Failed!").css("color", "red").show(200, "linear");
             setTimeout(function () {
                 $("#updatepasswordmessage").hide();
             }, 3000);
+            $("#updatepasswordnew").val("");
+            $("#updatepasswordold").val("");
         }
-        $("#updatepasswordnew").val("");
-        $("#updatepasswordold").val("");
     });
     $("#deletedatabutton").click(function () {
         jukax.eventsCleanup({
             success: function () {
                 buildCal(year, month);
-                $("#deletedatamessage").text("Done!").css("color", "gree").show();
+                $("#deletedatamessage").text("Done!").css("color", "green").show(200, "linear");
                 setTimeout(function () {
-                    $("#deletedatamessage").hide();
+                    $("#deletedatamessage").hide(200);
                 }, 3000);
+
+                if (lastPage === "#events") {
+                    buildeventsList();
+                }
             },
             failure: function (e) {
                 if (e.type === jukax.ERROR_CLEANINGUP_EVENTS) {
-                    $("#deletedatamessage").text("Failed!").css("color", "red").show();
+                    $("#deletedatamessage").text("Failed!").css("color", "red").show(200, "linear");
                     setTimeout(function () {
                         $("#deletedatamessage").hide();
                     }, 3000);
                 } else {
-                    $("#deletedatamessage").text("Relogin needed!").css("color", "yellow").show();
+                    $("#deletedatamessage").text("Relogin needed!").css("color", "yellow").show(200, "linear");
                     setTimeout(function () {
                         $("#deletedatamessage").hide();
                         $.mobile.changePage("#login");
@@ -620,10 +636,6 @@ $(function () {
         lastPage = "#cal";
         $.mobile.changePage("#cal");
     });
-
-
-
-
 
     $("#prevMonth").click(prevMonth);
     $("#nextMonth").click(nextMonth);
@@ -674,5 +686,10 @@ $(function () {
         buildCal(year, month);
     });
 
+    $(document).on('submit', 'form', function (e) {
+        e.preventDefault();
+        return false;
+    });
 
+    $.mobile.hashListeningEnabled = false;
 });

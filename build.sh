@@ -15,9 +15,8 @@ else
     echo "Unvalid App Build Version, version sould as X.X.X format" >&2
     exit
 fi
-[ -e build ] && rm -r build ## delete old build folder
-mkdir build  ## working dir
-cd build
+[ -e ~/jukax-$version ] && rm -r ~/jukax-$version ## delete old build folder
+mkdir ~/jukax-$version  ## working dir
 # build folder arch
 # ./
 #  | src/                     ## clone of app dev dir
@@ -40,10 +39,13 @@ cd build
 #  | jukax.crx                ## chrome packaged app
 #  | jukax.zip                ## firefox packaged app
 #  | make-crx-package.sh      ## script to create chrome packaged app
-cp -r ../src .
-cp -r ../website .
-cp ../make-crx-package.sh .
+cp LICENSE ~/jukax-$version
+cp -r ./src ~/jukax-$version
+cp -r ./website ~/jukax-$version
+cp ./make-crx-package.sh ~/jukax-$version
+cd ~/jukax-$version
 mkdir app
+cp LICENSE app
 cp -r src/css app
 cp -r src/js app
 cp -r src/img app
@@ -68,6 +70,7 @@ js/jquery.min.js
 js/jquery.mobile.min.js
 js/jquery.nicescroll.min.js
 js/jukax.js
+js/localForage.js
 js/main.js
 css/jquery.mobile.min.css
 css/main.css
