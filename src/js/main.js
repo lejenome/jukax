@@ -509,6 +509,13 @@ $(function () {
     }
 
     ////
+    //hide addbar on phones
+    window.addEventListener('load', function () {
+        setTimeout(function () {
+            window.scrollTo(0, 1);
+        }, 1);
+    }, false);
+
     jukax.storagesSet({
         Kii: true
     });
