@@ -3,20 +3,53 @@
 
 <head>
     <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=EDGE">
     <meta name="description" content="Simple Calendar Web Application" />
-    <link rel="shortcut icon" href="img/favicon.ico" />
     <title>
-        Jukax utility
+        Jukax
     </title>
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, minimum-scale=1, maximum-scale=1" />
+    <link rel="shortcut icon" href="img/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="256x256" href="img/jukax-256x256.png" sizes="256x256">
+    <link rel="apple-touch-icon" sizes="128x128" href="img/jukax-128x128.png" sizes="128x128">
+    <link rel="apple-touch-icon" sizes="114x114" href="img/jukax-114x114.png" />
+    <link rel="apple-touch-icon" sizes="72x72" href="img/jukax-72x72.png" />
+    <link rel="apple-touch-icon" sizes="144x144" href="img/jukax-144x144.png" />
+    <link rel="apple-touch-icon" sizes="60x60" href="img/jukax-60x60.png" />
+    <link rel="apple-touch-icon" sizes="120x120" href="img/jukax-120x120.png" />
+    <link rel="apple-touch-icon" sizes="76x76" href="img/jukax-76x76.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="img/jukax-152x152.png" />
+    <link rel="icon" type="image/png" href="img/jukax-16x16.png" sizes="16x16" />
+    <link rel="icon" type="image/png" href="img/jukax-32x32.png" sizes="32x32" />
+    <link rel="icon" type="image/png" href="img/jukax-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/png" href="img/jukax-160x160.png" sizes="160x160" />
+    <link rel="icon" type="image/png" href="img/jukax-196x196.png" sizes="196x196" />
+
     <!--Safari Web App Settings-->
-    <link rel="apple-touch-icon" href="img/jukax-60.png">
-    <link rel="apple-touch-icon" sizes="256x256" href="img/jukax-256.png">
-    <link rel="apple-touch-icon" sizes="128x128" href="img/jukax-128.png">
-    <link rel="apple-touch-startup-image" href="img/jukax-256.png">
-    <link rel="apple-touch-icon-precomposed" href="img/jukax-64.png" />
+    <!--<link rel="apple-touch-icon-precomposed" href="img/jukax-64.png" sizes="64x64" />-->
+    <link rel="apple-touch-startup-image" href="img/jukax-startup-320x480.png" sizes="320x480">
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!--TODO: add IE/W8 support :http://msdn.microsoft.com/en-us/library/ie/bg183312%28v=vs.85%29.aspx -->
+    <meta name="application-name" content="Jukax" />
+    <meta name="msapplication-config" content="img/browserconfig.xml" />
+    <meta name="msapplication-square70x70logo" content="img/jukax-msapplication-70x70.png" />
+    <meta name="msapplication-square150x150logo" content="img/jukax-msapplication-150x150.png" />
+    <meta name="msapplication-square310x310logo" content="img/jukax-msapplication-310x310.png" />
+    <meta name="msapplication-wide310x150logo" content="img/jukax-msapplication-310x150.png" />
+    <meta name="msapplication-TileColor" content="#0092d8" />
+    <meta name="msapplication-TileImage" content="img/jukax-msapplication-288x288.png" />
+
+    <!-- initial Open Graph protocol support: http://ogp.me/ -->
+    <meta property="og:title" content="Jukax" />
+    <meta property="og:site_name" content="Jukax" />
+    <meta property="og:description" content="Simple Calendar Web Application" />
+    <meta property="og:see_also" content="http://lejenome.github.io/jukax-about" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="http://lejenome.github.io/jukax" />
+    <meta property="og:image" content="img/jukax-screenshot-300.png" />
+    <!--TODO: add FB Graph support for online ver if doesn't break privacy: <meta property="fb:admins" content="xxxxxx" /> -->
+    <meta property="fb:admins" content="561204343963339" />
     <!--1.4.0-->
     <link rel="stylesheet" href="css/jquery.mobile.css" />
     <!--2.0.3-->
@@ -214,7 +247,7 @@
         <!-- /header -->
         <!-- content -->
         <div data-role="content">
-            <form  data-ajax="false">
+            <form data-ajax="false">
                 <label for="title" class="ui-hidden-accessible">Title:</label>
                 <input required name="title" id="title" pattern=".+" placeholder="Title" value="" type="text" />
 
@@ -387,7 +420,7 @@
     <div data-role="page" id="deleteaccount" data-theme="a">
         <div data-role="content">
             <h3>Delete account?</h3>
-            <p id="deleteaccountmessage" style="display:none;"  class="noteBar ui-bar ui-bar-a"></p>
+            <p id="deleteaccountmessage" style="display:none;" class="noteBar ui-bar ui-bar-a"></p>
             <a id="deleteaccountbutton" class="ui-btn ui-btn-up-b ui-shadow ui-btn-corner-all" data-wrapperels="span" data-iconshadow="true" data-shadow="true" data-corners="true" href="#" data-role="button">
                 <span class="ui-btn-inner">
                     <span class="ui-btn-text">Delete</span>
