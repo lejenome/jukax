@@ -29,6 +29,20 @@ var whenReady = null,
 var isLogin = false,
     keepLogin = false,
     loginToken = null;
+var ready = function (fn) {
+    if (alreadyReady) {
+        fn();
+    } else {
+        whenReady = fn;
+    }
+};
+var itsReady = function () {
+    alreadyReady = true;
+    if (whenReady) {
+        whenReady();
+
+    }
+};
 localForage.getItem("keepLogin", function (item) {
     if (!item) { // maybe not defined yet
         item = false;
@@ -50,20 +64,7 @@ localForage.getItem("keepLogin", function (item) {
 });
 var debug = true;
 
-var ready = function (fn) {
-    if (alreadyReady) {
-        fn();
-    } else {
-        whenReady = fn;
-    }
-};
-var itsReady = function () {
-    alreadyReady = true;
-    if (whenReady) {
-        whenReady();
 
-    }
-};
 var storagesSet = function (storages) {
     storages = typeof storages !== 'undefined' ? storages : {};
     if (storages.hasOwnProperty("local")) {
@@ -163,6 +164,7 @@ var accountLogin = function (username, password, fn) {
                 queryCallbacks = {
                     success: function (queryPerformed, r /*, nextQuery*/ ) {
                         debug("Queryed for data");
+                        /*
                         r[0].refresh({
                             success: function (obj) {
                                 debug("data refreshed: " + obj.toString());
@@ -202,7 +204,9 @@ var accountLogin = function (username, password, fn) {
                                     });
                                 }
                             }
-                        });
+                        });*/
+                        data = r[0];
+                        fn.success();
                     },
                     failure: function (queryPerformed, errorString) {
                         debug(5, [errorString]);
@@ -440,8 +444,8 @@ eventsNew = eventsUpdate = function (YMD, event) { //YMD : Year+Month+Day String
     }
     data.set("data", eventsData);
     data.save({
-        success: function (obj) {
-            data = obj;
+        success: function ( /*obj*/ ) {
+            //data = obj;
             //....?????
         },
         failure: function () {
@@ -472,8 +476,8 @@ var eventsDelete = function (YMD, created) {
     }
     data.set("data", eventsData);
     data.saveAllFields({
-        success: function (obj) {
-            data = obj;
+        success: function ( /*obj*/ ) {
+            //data = obj;
             //.....??????
         },
         failure: function () {

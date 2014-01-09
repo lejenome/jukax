@@ -87,6 +87,8 @@
 
   function setItem(key, value, callback) {
     withStore('readwrite', function setItemBody(store) {
+      if (value === null)
+          value = undefined;
       var req = store.put(value, key);
       console.log("SET:",key);
       if (callback) {

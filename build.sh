@@ -36,6 +36,7 @@ mkdir ~/jukax-$version  ## working dir
 #  | background.js            ## chrome packaged app background.js
 #  | package.manifest         ## firefox packaged app manifest
 #  | manifest.appcache        ## app cache for online version
+#  | browserconfig.xml        ## win8 integration
 #  | jukax.crx                ## chrome packaged app
 #  | jukax.zip                ## firefox packaged app
 #  | make-crx-package.sh      ## script to create chrome packaged app
@@ -50,15 +51,16 @@ cp -r src/css app
 cp -r src/js app
 cp -r src/img app
 cp src/background.js .
-sed 's/src="js\/jquery\.js"/src="js\/jquery\.min.js"/' src/index.html|sed 's/src="js\/jquery\.mobile\.js"/src="js\/jquery\.mobile\.min\.js"/'|sed 's/href="css\/jquery\.mobile\.css"/href="css\/jquery\.mobile\.min\.css"/'|sed 's/<\!--.*-->//g'| grep "[^ ]" > app/index.html  ## use min versions of scripts and delete empty lines
+sed 's/src="js\/jquery\.js"/src="js\/jquery\.min.js"/' src/index.html|sed 's/src="js\/jquery\.mobile\.js"/src="js\/jquery\.mobile\.min\.js"/'|sed 's/href="css\/jquery\.mobile\.css"/href="css\/jquery\.mobile\.min\.css"/'| sed "s/<meta itemprop=\"softwareVersion\" content=\"trunk\"/<meta itemprop=\"softwareVersion\" content=\"${version}\"/"|sed 's/<\!--.*-->//g'| grep "[^ ]" > app/index.html  ## use min versions of scripts and delete empty lines
 sed "s/updatecheck codebase.*$/updatecheck codebase='http:\/\/lejenome.github.io\/jukax-about-app\/jukax-${version}.crx' version='$version' \/>/" src/chrome-updates.xml > chrome-updates.xml  ## update version
 sed "s/version\": \"[^\"]*\"/version\": \"$version\"/" src/manifest.json |grep "[^ ]" > manifest.json  ## update version
 sed "s/version\": \"[^\"]*\"/version\": \"$version\"/" src/manifest.webapp |grep "[^ ]" > manifest.webapp  ##update version
+cp src/browserconfig.xml .
 sed "s/<\!--version-->.*<\!--\/version-->/$version/g" website/index.html |grep "[^ ]" > website/index.html.new  ##update version
 mv website/index.html.new website/index.html
 cat <<EOF > manifest.appcache
 CACHE MANIFEST
-# $(date "+%Y-%m-%d"):v$version
+# $(date "+%Y-%m-%d:%H:%M"):v$version
 
 CACHE:
 EOF
@@ -102,8 +104,8 @@ cp jukax.crx website/app
 cp jukax.crx website/app/jukax-${version}.crx
 ## create online app
 cp -r app online-app
-cp manifest.json manifest.appcache package.manifest background.js chrome-updates.xml online-app
+cp manifest.json manifest.appcache package.manifest background.js chrome-updates.xml browserconfig.xml online-app
 sed 's/": "\/i/": "\/jukax\/i/' manifest.webapp > online-app/manifest.webapp ## needed to runs on lejenome.github.io/jukax
-sed 's/<html>/<html manifest="manifest.appcache">/' app/index.html > online-app/index.html
+sed 's/<html/<html manifest="manifest.appcache"/' app/index.html > online-app/index.html
 ## DONE
 echo "Don't miss to update the web site and its app folder"

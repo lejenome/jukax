@@ -23,10 +23,11 @@ $(function () {
             repeat: "once",
             reminder: "no",
             level: "A",
-            created: null
+            created: null,
+            ymd: null
         },
         //functions list
-        daySelectAction,
+        calendarDayClicked,
         selectedDay, //point to selected day on cal
         date = new Date(),
         //months US short symbol
@@ -40,7 +41,7 @@ $(function () {
     }
 
     // when a day from Cal selected
-    daySelectAction = function () {
+    calendarDayClicked = function () {
         if (selectedDay) {
             selectedDay.removeClass("selected");
         }
@@ -77,55 +78,37 @@ $(function () {
         buildCal(year, month);
     }
 
+    //create li item for the 2 events lists
+    function newEventItem(event, YMD) {
+        return "<li class='tag-" + event.level + "' data-created='" + event.created + "' data-ymd='" + YMD + "'><a><h3>" +
+            (event.title ? event.title : 'Unidentified') +
+            (event.where ? ' <small>(' + event.where + ')</small>' : '') +
+            "</h3><p>" + event.note + "</p><p class='ui-li-aside'>" + event.time + "</p></a></li>";
+    }
     //Updating the list of events on the selected day
     function updateListview() {
+        var time = new Date().getTime();
+
         $.mobile.loading("show");
-        listview.empty();
+        var listView = document.getElementById("listview");
         var YMD = year + month + day,
             events = jukax.eventsGet(YMD),
-            i,
-            row,
-            link,
-            titleField,
-            linkEvent = function () {
-                editEvent($(this).data("created"), YMD);
-            };
+            listViewContent = "",
+            i;
         if (events !== null) {
             for (i = 0; i < events.length; i++) {
-                row = $("<li></li>");
-                link = $("<a></a>").click(linkEvent);
-                if (events[i].level === "C") {
-                    row.addClass("tag-C");
-                } else if (events[i].level === "B") {
-                    row.addClass("tag-B");
-                } else {
-                    row.addClass("tag-A");
-                }
-                $(link).data("created", events[i].created);
-                titleField = "<h3>" + (events[i].title ? events[i].title : "Unidentified");
-                if (events[i].where) {
-                    titleField += "<small>  (" + events[i].where + ")</small>";
-                }
-                titleField += "</h3>";
-                $(link).append(titleField);
-                $(link).append("<p>" + events[i].note + "</p>");
-                $(link).append($("<p></p>").attr("class", "ui-li-aside").text(events[i].time));
-                $(row).append(link);
-                listview.append(row);
+                listViewContent += newEventItem(events[i], YMD);
             }
         }
-        listview.listview("refresh");
         listview.removeClass("hidden");
+        listView.innerHTML = listViewContent;
+        listview.listview("refresh");
         $.mobile.loading("hide");
-        // Add event delete by swaping left/right on supported devices
-        $(document).on("swipeleft swiperight", "#listview li", function (event) {
-            var listitem = $(this),
-                // These are the classnames used for the CSS transition
-                dir = event.type === "swipeleft" ? "left" : "right",
-                // Check if the browser supports the transform (3D) CSS transition
-                transition = $.support.cssTransform3d ? dir : false;
-            confirmAndDelete(listitem, transition);
-        });
+
+        console.log("List created on:", new Date().getTime() - time);
+
+
+
     }
 
     //return the nbre of days on a month
@@ -133,61 +116,48 @@ $(function () {
         return [31, (((year % 4 === 0 && year % 100 !== 0) || year % 400 === 0) ? 29 : 28), 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][month];
     }
 
+    /*
     //Create new calendar item
     function newTD(str, date) {
-        var td = $("<td></td>");
-        if (str !== null) {
-            td.text(str);
-            td.click(daySelectAction);
-        } else {
-            td.addClass("empty");
+        if (!str) {
+            return $("<td class='empty'></td>");
         }
-        if (date !== null && jukax.eventsGet(date)) {
-            td.addClass("date-has-event");
-        }
-        return td;
+        return $("<td" + (jukax.eventsGet(date) ? " class='date-has-event'>" : ">") + str + "</td>").click(calendarDayClicked);
     }
+    */
 
     //Building the calendar for a given Month
     function buildCal(year, month) {
         window.year = year;
         window.month = month;
-        var d = new Date(year + "-" + month),
-            i = 1,
-            j = 1,
-            tr = $("<tr></tr>"),
-            /*td,*/
-            tbody = $("tbody"),
-            x;
-        tbody.empty();
+        var time = new Date().getTime();
 
-        while (i < d.getDay() || (d.getDay() === 0 && i < 7)) {
-            tr.append(newTD(null, null));
-            i++;
+        var tbody = document.getElementsByTagName("tbody")[0],
+            firstDay = new Date(year + "-" + month).getDay(),
+            daysNbre = daysInMonth(parseInt(year, 10), parseInt(month, 10) - 1),
+            tbodyContent = "<tr>",
+            dayOnMonth,
+            i = 1;
+        for (i = 0; i < firstDay; i++) {
+            tbodyContent += "<td class='empty'></td>";
         }
-        d.setDate(daysInMonth(parseInt(year, 10), parseInt(month, 10) - 1));
-        x = d.getDate() + i;
-        while (i < x) {
-            tr.append(newTD(j.toString(), year + month + j.toString()));
-            if (i % 7 === 0) {
-                tbody.append(tr);
-                tr = $("<tr></tr>");
+        for (dayOnMonth = 1; dayOnMonth <= daysNbre; dayOnMonth++) {
+            if (++i === 8) {
+                tbodyContent += "</tr><tr>";
+                i = 1;
             }
-            i++;
-            j++;
+            tbodyContent += "<td class='day-on-month" + (jukax.eventsGet(year + month + dayOnMonth.toString()) ? " date-has-event'>" : "'>") + dayOnMonth.toString() + "</td>";
         }
-        if (d.getDay() !== 0) {
-            i = d.getDay();
-            while (i < 7) {
-                tr.append(newTD(null, null));
-                i++;
-            }
-            tbody.append(tr);
+        for (; i < 7; i++) {
+            tbodyContent += "<td class='empty'></td>";
         }
+        tbodyContent += "</tr>";
         listview.empty();
         newb.hide();
         monthField.text(months[parseInt(month, 10) - 1] + " " + year);
         $("#controlgroup").controlgroup();
+        tbody.innerHTML = tbodyContent;
+        console.log("Calendar created on:", new Date().getTime() - time);
     }
 
     function editEvent(created, YMD) {
@@ -195,10 +165,10 @@ $(function () {
         if (e === null) {
             newEvent();
         } else {
-            form.title.val(e.title);
-            form.where.val(e.where);
-            form.note.val(e.note);
-            form.time.val(e.time);
+            form.title.val(e.title.replace("&lt;", "<", "g").replace("&gt;", ">", "g"));
+            form.where.val(e.where.replace("&lt;", "<", "g").replace("&gt;", ">", "g"));
+            form.note.val(e.note.replace("&lt;", "<", "g").replace("&gt;", ">", "g"));
+            form.time.val(e.time.replace("&lt;", "<", "g").replace("&gt;", ">", "g"));
             /*form.repeat = $('#repeat option[value="'+e.repeat+'"]').prop("checked", true).checkboxradio("refresh").val();
              form.reminder = $('#reminder option[value="'+e.reminder+'"]').prop("checked", true).val();*/
             form.level = e.level;
@@ -215,14 +185,16 @@ $(function () {
 
     function getHM() { //get Hours:Minutes String
         var time = new Date(),
-            hours = time.getHours().toString(),
-            minutes = time.getMinutes().toString();
-        if (hours.length === 1) {
+            hours = time.getHours(),
+            minutes = time.getMinutes();
+        hours = (hours < 10) ? "0" + hours.toString() : hours.toString();
+        minutes = (minutes < 10) ? "0" + minutes.toString() : minutes.toString();
+        /*if (hours.length === 1) {
             hours = "0" + hours;
         }
         if (minutes.length === 1) {
             minutes = "0" + minutes;
-        }
+        }*/
         return hours + ":" + minutes;
     }
 
@@ -237,31 +209,34 @@ $(function () {
         $("#delete").hide();
         $.mobile.changePage("#eventPage");
         $("#level-radio :radio").checkboxradio("refresh");
+        form.ymd = year + month + day;
     }
 
     function saveEvent() {
         var event = {
-            title: form.title.val(),
-            where: form.where.val(),
-            note: form.note.val(),
-            time: form.time.val(),
+            title: form.title.val().replace("<", "&lt;", "g").replace(">", "&gt;", "g"),
+            where: form.where.val().replace("<", "&lt;", "g").replace(">", "&gt;", "g"),
+            note: form.note.val().replace("<", "&lt;", "g").replace(">", "&gt;", "g"),
+            time: form.time.val().replace("<", "&lt;", "g").replace(">", "&gt;", "g"),
             repeat: "once",
             reminder: "no",
             level: $("#level-radio input:checked").val(),
             created: form.created
         };
-        jukax.eventsUpdate(year + month + day, event);
-        if (lastPage == "#events") {
+        jukax.eventsUpdate(form.ymd ? form.ymd : year + month + day, event);
+        if (lastPage === "#events") {
             buildeventsList();
         }
         $.mobile.changePage(lastPage);
         updateListview();
-        selectedDay.addClass("date-has-event");
+        if (selectedDay) {
+            selectedDay.addClass("date-has-event");
+        }
     }
 
     function deleteEvent(created, YMD) {
         jukax.eventsDelete(YMD, created);
-        if (lastPage == "#events") {
+        if (lastPage === "#events") {
             buildeventsList();
         }
         $.mobile.changePage(lastPage);
@@ -278,7 +253,7 @@ $(function () {
         $("#confirmDelete").popup("open");
         // Proceed when the user confirms
         $("#confirmDelete .yes").on("click", function () {
-            jukax.eventsDelete(year + month + day, listitem.children("a").data("created"));
+            jukax.eventsDelete(year + month + day, listitem.data("created"));
             // Remove with a transition
             if (transition) {
                 listitem
@@ -313,18 +288,15 @@ $(function () {
     }
 
     function buildeventsList() {
+        var time = new Date().getTime();
         $.mobile.loading("show");
         var evlist = $("#eventsList"),
+            evList = document.getElementById("eventsList"),
+            evListContent = "",
             i,
             events,
-            row,
-            link,
             datesData,
-            date,
-            titleField,
-            linkEvent = function () {
-                editEvent($(this).data("created"), $(this).data("date"));
-            };
+            date;
         evlist.empty();
         if (jukax.dataGet()) {
             datesData = jukax.dataGet().get("data");
@@ -335,38 +307,20 @@ $(function () {
             }
             events = jukax.eventsGet(date);
             if (events) {
-                evlist.append($("<li></li>").data("date", date).data("role", "list-divider").data("theme", "a").text(date.substring(6) + "/" + date.substr(4, 2) + "/" + date.substr(0, 4)).append($("<span></span>").attr("class", "ui-li-count").data("theme", "a").text(events.length.toString())));
-
+                evListContent += "<li data-date='" + date + "' data-role='list-divider'>" + date.substring(6) + "/" + date.substr(4, 2) + "/" + date.substr(0, 4) + "<span class='ui-li-count'>" + events.length.toString() + "</span></li>";
                 for (i = 0; i < events.length; i++) {
-                    row = $("<li></li>");
-                    link = $("<a></a>").click(linkEvent);
-                    if (events[i].level === "C") {
-                        row.addClass("tag-C");
-                    } else if (events[i].level === "B") {
-                        row.addClass("tag-B");
-                    } else {
-                        row.addClass("tag-A");
-                    }
-                    $(link).data("created", events[i].created);
-                    $(link).data("date", date);
-                    $(link).data("created", events[i].created);
-                    titleField = "<h3>" + (events[i].title ? events[i].title : "Unidentified");
-                    if (events[i].where) {
-                        titleField += "<small>  (" + events[i].where + ")</small>";
-                    }
-                    titleField += "</h3>";
-                    $(link).append(titleField);
-                    $(link).append("<p>" + events[i].note + "</p>");
-                    $(link).append($("<p></p>").attr("class", "ui-li-aside").text(events[i].time));
-                    $(row).append(link);
-                    evlist.append(row);
+                    evListContent += newEventItem(events[i], date);
                 }
             }
         }
+        evList.innerHTML = evListContent;
         $.mobile.changePage("#events");
         lastPage = "#events";
         evlist.listview("refresh");
         $.mobile.loading("hide");
+        evlist.listview("option", "hideDividers", true);
+
+        console.log("List created on:", new Date().getTime() - time);
         // TODO: Add event delete by swaping left/right on supported devices
         /*$(document).on("swipeleft swiperight", "#eventsList li:not(.ui-li-has-count)", function (event) {
             var listitem = $(this),
@@ -392,7 +346,7 @@ $(function () {
                 itemDateCounter = listitem.prevAll(".ui-li-has-count").last();
             }
             var itemDate = itemDateCounter.data("date");
-            jukax.eventsDelete(itemDate, listitem.children("a").data("created"));
+            jukax.eventsDelete(itemDate, listitem.data("created"));
             // Remove with a transition
             if (transition) {
                 listitem
@@ -698,5 +652,25 @@ $(function () {
         return false;
     });
 
+
+    $(document).on("click", "#listview li", function () {
+        form.ymd = $(this).data("ymd");
+        editEvent($(this).data("created"), $(this).data("ymd"));
+    });
+    $(document).on("click", "#eventsList>li[data-created]", function () {
+        form.ymd = $(this).data("ymd");
+        editEvent($(this).data("created"), $(this).data("ymd"));
+    });
+    $(document).on("click", ".day-on-month", calendarDayClicked);
+
+    // Add event delete by swaping left/right on supported devices
+    $(document).on("swipeleft swiperight", "#listview li", function (event) {
+        var listitem = $(this),
+            // These are the classnames used for the CSS transition
+            dir = event.type === "swipeleft" ? "left" : "right",
+            // Check if the browser supports the transform (3D) CSS transition
+            transition = $.support.cssTransform3d ? dir : false;
+        confirmAndDelete(listitem, transition);
+    });
     $.mobile.hashListeningEnabled = false;
 });
