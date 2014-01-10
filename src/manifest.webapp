@@ -4,13 +4,13 @@
   "description": "Sample Calendar/To-Do app",
   "launch_path": "/jukax/index.html",
   "icons": {
-    "16": "/jukax/img/jukax-16.png",
-    "32": "/jukax/img/jukax-32.png",
-    "48": "/jukax/img/jukax-48.png",
-    "60": "/jukax/img/jukax-60.png",
-    "64": "/jukax/img/jukax-64.png",
-    "128": "/jukax/img/jukax-128.png",
-    "256": "/jukax/img/jukax-256.png"
+    "16": "/jukax/img/jukax-16x16.png",
+    "32": "/jukax/img/jukax-32x32.png",
+    "48": "/jukax/img/jukax-48x46.png",
+    "60": "/jukax/img/jukax-60x60.png",
+    "64": "/jukax/img/jukax-64x64.png",
+    "128": "/jukax/img/jukax-128x128.png",
+    "256": "/jukax/img/jukax-256x256.png"
   },
   "developer": {
     "name": "Moez Bouhlel",

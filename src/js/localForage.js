@@ -76,7 +76,6 @@
         var value = req.result;
         if (value === undefined)
           value = null;
-        console.log("GET",key);
         callback(value);
       };
       req.onerror = function getItemOnError() {
@@ -88,16 +87,14 @@
   function setItem(key, value, callback) {
     withStore('readwrite', function setItemBody(store) {
       if (value === null)
-          value = undefined;
+        value = undefined;
       var req = store.put(value, key);
-      console.log("SET:",key);
       if (callback) {
         req.onsuccess = function setItemOnSuccess() {
           callback();
         };
       }
       req.onerror = function setItemOnError() {
-          console.log("SET ERROR:", key);
         console.error('Error in asyncStorage.setItem(): ', req.error.name);
       };
     });
@@ -202,8 +199,10 @@
 
     'use strict';
 
-    // Initialize localStorage and create a variable to use throughout the code.
-    var localStorage = (typeof(chrome)!== "undefined" && typeof(chrome.runtime)!== "undefined")? undefined : window.localStorage;
+    // Initialize localStorage and create a variable to use throughout the code as long it's not running inside a google chrome packaged webapp.
+    var localStorage = undefined;
+    if (typeof(chrome) === "undefined" || typeof(chrome.runtime) === "undefined")
+      localStorage = window.localStorage;
 
     
     // If IndexedDB isn't available, we'll fall back to localStorage.
