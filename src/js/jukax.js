@@ -416,7 +416,7 @@ eventsNew = eventsUpdate = function (YMD, event) { //YMD : Year+Month+Day String
     }
     if (!event.hasOwnProperty("created") || event.created === null) {
         //eventIndex=-1;
-        event.created = new Date().getTime();
+        event.created = Date.now();
     } else {
         for (j = 0; j < eventsData[YMD].length; j++) {
             if (eventsData[YMD][j].created === event.created) {
@@ -495,7 +495,7 @@ var eventsObject = function () {
         repeat: "once",
         reminder: "no",
         level: "A",
-        created: new Date().getTime()
+        created: Date.now()
     };
 };
 

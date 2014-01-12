@@ -112,7 +112,9 @@
         <!-- /header -->
 
         <!-- content -->
-        <form data-role="content" data-ajax="false">
+        <form data-role="content" data-ajax="false" action="https://api.kii.com/">
+            <p id="login-err-msg" style="display:none;" class="noteBar ui-bar ui-bar-a"></p>
+
 
             <div style="margin:18px;">
                 <label for="username">Enter a Username:</label>
@@ -282,7 +284,9 @@
         <!-- /header -->
         <!-- content -->
         <div data-role="content">
-            <form data-ajax="false">
+            <form data-ajax="false" action="https://api.kii.com/">
+                <p id="event-err-msg" style="display:none;" class="noteBar ui-bar ui-bar-a"></p>
+
                 <label for="title" class="ui-hidden-accessible">Title:</label>
                 <input required name="title" id="title" pattern=".+" placeholder="Title" value="" type="text" />
 
@@ -337,7 +341,7 @@
     <div id="events" data-role="page" data-theme="a">
         <div data-role="header" data-position="fixed">
             <a href="#nav-panel2" data-icon="bars" data-iconpos="notext">Menu</a>
-            <form class="ui-filterable ui-mini " data-ajax="false">
+            <form class="ui-filterable ui-mini " data-ajax="false" action="https://api.kii.com/">
                 <input id="filterBasic-input" data-type="search">
             </form>
         </div>
@@ -437,7 +441,7 @@
         </div>
     </div>
     <div data-role="page" id="updatepassword" data-theme="a">
-        <form data-role="content" data-ajax="false">
+        <form data-role="content" data-ajax="false" action="https://api.kii.com/">
             <p id="updatepasswordmessage" style="display:none;" class="noteBar ui-bar ui-bar-a"></p>
             <label for="updatepasswordold" class="ui-hidden-accessible">Old password:</label>
             <input name="updatepasswordold" id="updatepasswordold" placeholder="Old password" value="" type="password" />

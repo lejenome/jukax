@@ -168,7 +168,7 @@ $(function () {
             form.title.val(e.title.replace("&lt;", "<", "g").replace("&gt;", ">", "g"));
             form.where.val(e.where.replace("&lt;", "<", "g").replace("&gt;", ">", "g"));
             form.note.val(e.note.replace("&lt;", "<", "g").replace("&gt;", ">", "g"));
-            form.time.val(e.time.replace("&lt;", "<", "g").replace("&gt;", ">", "g"));
+            form.time.val(e.time);
             /*form.repeat = $('#repeat option[value="'+e.repeat+'"]').prop("checked", true).checkboxradio("refresh").val();
              form.reminder = $('#reminder option[value="'+e.reminder+'"]').prop("checked", true).val();*/
             form.level = e.level;
@@ -214,23 +214,54 @@ $(function () {
 
     function saveEvent() {
         var event = {
-            title: form.title.val().replace("<", "&lt;", "g").replace(">", "&gt;", "g"),
-            where: form.where.val().replace("<", "&lt;", "g").replace(">", "&gt;", "g"),
-            note: form.note.val().replace("<", "&lt;", "g").replace(">", "&gt;", "g"),
-            time: form.time.val().replace("<", "&lt;", "g").replace(">", "&gt;", "g"),
+            title: form.title.val(),
+            where: form.where.val(),
+            note: form.note.val(),
+            time: form.time.val().trim(),
             repeat: "once",
             reminder: "no",
             level: $("#level-radio input:checked").val(),
             created: form.created
-        };
-        jukax.eventsUpdate(form.ymd ? form.ymd : year + month + day, event);
-        if (lastPage === "#events") {
-            buildeventsList();
+        },
+            time = /^([012]?\d) *: *([012345]?\d)(?::\d{1,2}\.?\d{0,2})? *(am|pm)?$/i.exec(event.time);
+        if (event.time && (!time || time[3] && parseInt(time[1], 10) > 12)) {
+            time = null;
         }
-        $.mobile.changePage(lastPage);
-        updateListview();
-        if (selectedDay) {
-            selectedDay.addClass("date-has-event");
+
+        if (!event.title && !event.note) {
+            $("#event-err-msg").text("You should put at least a title or a note.").css("color", "red").show(200, "linear");
+            setTimeout(function () {
+                $("#event-err-msg").hide();
+            }, 6000);
+        } else if (event.title && event.title.length > 42) {
+            $("#event-err-msg").text("Title sould not be more than 42 characters").css("color", "red").show(200, "linear");
+            setTimeout(function () {
+                $("#event-err-msg").hide();
+            }, 6000);
+        } else if (event.time && !time) {
+            $("#event-err-msg").text("Time is not valid").css("color", "red").show(200, "linear");
+            setTimeout(function () {
+                $("#event-err-msg").hide();
+            }, 6000);
+        } else {
+            event.time = time ? (
+                (time[1].length === 1 ? "0" + time[1] : time[1]) +
+                ":" +
+                (time[2].length === 1 ? "0" + time[2] : time[2]) +
+                (time[3] ? " " + time[3] : '')
+            ) : "";
+            event.title = event.title.replace("<", "&lt;", "g").replace(">", "&gt;", "g");
+            event.where = event.where.replace("<", "&lt;", "g").replace(">", "&gt;", "g");
+            event.note = event.note.replace("<", "&lt;", "g").replace(">", "&gt;", "g");
+            jukax.eventsUpdate(form.ymd ? form.ymd : year + month + day, event);
+            if (lastPage === "#events") {
+                buildeventsList();
+            }
+            $.mobile.changePage(lastPage);
+            updateListview();
+            if (selectedDay) {
+                selectedDay.addClass("date-has-event");
+            }
         }
     }
 
@@ -389,68 +420,108 @@ $(function () {
 
     }
 
+
     function performRegistration() {
-        $.mobile.loading("show");
-        jukax.accountKeepLogin(false, function () {
-            var username = $("#username").val(),
-                password = $("#password").val();
-            jukax.accountKeepLogin($('#keepLogin').prop("checked"), function () {
-                try {
-                    jukax.accountCreate(username, password, {
+        var username = $("#username").val(),
+            password = $("#password").val();
+        if (username.length < 4 || password.length < 4) {
+            $("#login-err-msg").text("Username and Password should be at least 4 charachters").css("color", "red").show(200, "linear");
+            setTimeout(function () {
+                $("#login-err-msg").hide();
+            }, 3000);
+        } else {
+            $.mobile.loading("show");
+            jukax.accountKeepLogin(false, function () {
+                jukax.accountKeepLogin($('#keepLogin').prop("checked"), function () {
+                    try {
+                        jukax.accountCreate(username, password, {
+                            success: function () {
+                                buildCal(year, month);
+                                $("#select-month").val(months[parseInt(month, 10) - 1]).selectmenu("refresh");
+                                $("#select-year").val(year).selectmenu("refresh");
+                                $.mobile.changePage("#cal");
+                                $("#username").val("");
+                                $("#password").val("");
+                                $.mobile.loading("hide");
+                            },
+                            failure: function (e) {
+                                $.mobile.loading("hide");
+                                if (typeof (window.navigator) !== undefined && typeof (window.navigator.onLine) !== undefined && !window.navigator.onLine) {
+                                    $("#login-err-msg").text("Unable to register: check your network connection").css("color", "red").show(200, "linear");
+                                    setTimeout(function () {
+                                        $("#login-err-msg").hide();
+                                    }, 4000);
+                                } else if (e.type === jukax.ERROR_CREATING_USER) {
+                                    if (e.message.indexOf("USER_ALREADY_EXISTS") > -1) {
+                                        e.message = "user already exists";
+                                    }
+                                    $("#login-err-msg").text("Unable to register: " + e.message).css("color", "red").show(200, "linear");
+                                    setTimeout(function () {
+                                        $("#login-err-msg").hide();
+                                    }, 3000);
+                                }
+                            }
+                        });
+                    } catch (e) {
+                        $.mobile.loading("hide");
+                        if (e.message.indexOf("USER_ALREADY_EXISTS") > -1) {
+                            e.message = "user already exists";
+                        }
+                        $("#login-err-msg").text("Unable to register: " + e.message).css("color", "red").show(200, "linear");
+                        setTimeout(function () {
+                            $("#login-err-msg").hide();
+                        }, 3000);
+                    }
+                });
+
+            });
+        }
+    }
+
+    function performLogin() {
+        var username = $("#username").val(),
+            password = $("#password").val();
+        if (username.length < 4 || password.length < 4) {
+            $("#login-err-msg").text("Username and Password should be at least 4 charachters").css("color", "red").show(200, "linear");
+            setTimeout(function () {
+                $("#login-err-msg").hide();
+            }, 3000);
+        } else {
+            $.mobile.loading("show");
+            jukax.accountKeepLogin(false, function () {
+                var username = $("#username").val(),
+                    password = $("#password").val();
+                jukax.accountKeepLogin($('#keepLogin').prop("checked"), function () {
+                    jukax.accountLogin(username, password, {
                         success: function () {
                             buildCal(year, month);
+                            $.mobile.changePage("#cal");
                             $("#select-month").val(months[parseInt(month, 10) - 1]).selectmenu("refresh");
                             $("#select-year").val(year).selectmenu("refresh");
-                            $.mobile.changePage("#cal");
                             $("#username").val("");
                             $("#password").val("");
                             $.mobile.loading("hide");
                         },
                         failure: function (e) {
                             $.mobile.loading("hide");
-                            if (e.type === jukax.ERROR_CREATING_USER) {
-                                alert("Unable to register: " + e.message);
+                            if (typeof (window.navigator) !== undefined && typeof (window.navigator.onLine) !== undefined && !window.navigator.onLine) {
+                                $("#login-err-msg").text("Unable to login: check your network connection").css("color", "red").show(200, "linear");
+                                setTimeout(function () {
+                                    $("#login-err-msg").hide();
+                                }, 4000);
+                            } else if (e.type === jukax.ERROR_LOGIN) {
+                                $("#login-err-msg").text("Unable to login: check your input").css("color", "red").show(200, "linear");
+                                setTimeout(function () {
+                                    $("#login-err-msg").hide();
+                                }, 3000);
                             }
                         }
                     });
-                } catch (e) {
-                    $.mobile.loading("hide");
-                    alert("Unable to register: " + e.message);
-                }
-            });
-
-        });
-
-    }
-
-    function performLogin() {
-        $.mobile.loading("show");
-        jukax.accountKeepLogin(false, function () {
-            var username = $("#username").val(),
-                password = $("#password").val();
-            jukax.accountKeepLogin($('#keepLogin').prop("checked"), function () {
-                jukax.accountLogin(username, password, {
-                    success: function () {
-                        buildCal(year, month);
-                        $.mobile.changePage("#cal");
-                        $("#select-month").val(months[parseInt(month, 10) - 1]).selectmenu("refresh");
-                        $("#select-year").val(year).selectmenu("refresh");
-                        $("#username").val("");
-                        $("#password").val("");
-                        $.mobile.loading("hide");
-                    },
-                    failure: function (e) {
-                        $.mobile.loading("hide");
-                        if (e.type === jukax.ERROR_LOGIN) {
-                            alert("Unable to login: " + e.message);
-                        }
-                    }
                 });
+
             });
 
-        });
-
-
+        }
     }
 
     function logout() {
@@ -543,7 +614,10 @@ $(function () {
                     },
                     failure: function (e) {
                         if (e.type === jukax.ERROR_UNVALID_INPUT) {
-                            alert(e.message);
+                            $("#updatepasswordmessage").text("Unvalid Input!").css("color", "red").show(200, "linear");
+                            setTimeout(function () {
+                                $("#updatepasswordmessage").hide();
+                            }, 3000);
                         } else if (e.type === jukax.ERROR_UPDATING_PASSWORD) {
                             $("#updatepasswordmessage").text("Failed!").css("color", "red").show(200, "linear");
                             setTimeout(function () {

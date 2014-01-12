@@ -82,6 +82,7 @@ https://api.kii.com/api
 https://api-jp.kii.com/api
 https://api-cn2.kii.com/api
 js/KiiSDK.js
+manifest.appcache
 EOF
 ## create firefox-packaged-app
 cp -r app firefox-packaged-app
