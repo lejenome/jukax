@@ -9,15 +9,12 @@
             "scripts": ["background.js"]
         }
     },
-    "permissions": ["http://code.jquery.com/*", "https://api.kii.com/*", "webview"],
+    "permissions": ["https://api.kii.com/*"],
     "icons": {
-        "256": "/img/jukax-256x256.png",
-        "128": "/img/jukax-128x128.png",
-        "64": "/img/jukax-64x64.png",
-        "60": "/img/jukax-60x60.png",
-        "48": "/img/jukax-48x48.png",
-        "32": "/img/jukax-32x32.png",
-        "16": "/img/jukax-16x16.png"
+        "16": "/img/jukax-icon-16x16.png",
+        "48": "/img/jukax-icon-48x48.png",
+        "128": "/img/jukax-icon-128x128.png",
+        "256": "/img/jukax-icon-256x256.png"
     },
     "update_url": "http://lejenome.github.io/jukax/chrome-updates.xml"
 }

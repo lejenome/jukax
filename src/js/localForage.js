@@ -200,8 +200,8 @@
     'use strict';
 
     // Initialize localStorage and create a variable to use throughout the code as long it's not running inside a google chrome packaged webapp.
-    var localStorage = undefined;
-    if (typeof(chrome) === "undefined" || typeof(chrome.runtime) === "undefined")
+    var localStorage;
+    if (!window.chrome || !window.chrome.runtime)
       localStorage = window.localStorage;
 
     
