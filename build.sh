@@ -27,7 +27,7 @@ for arg in "$@"; do
             pem_path="$(echo "$arg"| sed 's/--pem=//')"
             ;;
         \-\-website=*)
-            version="$(echo "$arg"| sed 's/--website=//')"
+            website="$(echo "$arg"| sed 's/--website=//')"
             ;;
         \-\-app_root=*)
             app_root="$(echo "$arg"| sed 's/--app_root=//')"
@@ -50,7 +50,7 @@ fi
 if [ "$build_path" == "" ]; then
     build_path=~/jukax-$version
 fi
-[ -e "$build_path" ] && rm -r "$build_path" ## delete old build folder
+[ -e "$build_path" ] && rm -rf "$build_path" ## delete old build folder
 mkdir "$build_path"  ## working dir
 # build folder arch
 # ./
@@ -79,7 +79,6 @@ cp LICENSE "$build_path"
 cp -r ./src "$build_path"
 cp -r ./website "$build_path"
 cp ./make-crx-package.sh "$build_path"
-cp ./compiler.jar "$build_path"
 cd "$build_path"
 mkdir app
 cp LICENSE app
@@ -88,12 +87,12 @@ cp -r src/js app
 cp -r src/img app
 cp src/background.js .
 #sed 's/src="js\/jquery\.js"/src="js\/jquery\.min.js"/' src/index.html|sed 's/src="js\/jquery\.mobile\.js"/src="js\/jquery\.mobile\.min\.js"/'|sed 's/src="js\/main\.js"/src="js\/main\.min\.js"/'|sed 's/src="js\/jukax\.js"/src="js\/jukax\.min\.js"/'|sed 's/src="js\/KiiSDK\.js"/src="js\/KiiSDK\.min\.js"/'|sed 's/src="js\/localForage\.js"/src="js\/localForage\.min\.js"/'|sed 's/href="css\/jquery\.mobile\.css"/href="css\/jquery\.mobile\.min\.css"/'| sed "s/<meta itemprop=\"softwareVersion\" content=\"trunk\"/<meta itemprop=\"softwareVersion\" content=\"${version}\"/"|sed 's/<\!--.*-->//g'| grep "[^ ]" > app/index.html  ## use min versions of scripts and delete empty lines
-sed 's|src="js/jquery\.js"|src="js/jquery.min.js"|' src/index.html | sed 's|src="js/jquery\.mobile\.js"|src="js/jquery.mobile.min.js"|' | sed 's|src="js/main\.js"|src="js/main.min\.js"|' | sed 's|^.*src="js/jukax\.js".*$||' | sed 's|^.*src="js/KiiSDK\.js".*$||' | sed 's|^.*src="js/localForage\.js".*$||' | sed 's|href="css/jquery\.mobile\.css"|href="css/jquery.mobile.min.css"|'| sed 's/<meta itemprop="softwareVersion" content="trunk"/<meta itemprop="softwareVersion" content='"${version}"'/' | sed 's/<!--.*-->//g' | grep "[^ ]" > app/index.html  ## use min versions of scripts and delete empty lines
-sed 's,updatecheck codebase.*$,updatecheck codebase="'"${website}${about_root}"'/app/jukax-'"$version"'.crx version='"$version"' />,' src/chrome-updates.xml > chrome-updates.xml  ## update version
-sed 's/version": "[^"]*"/version": "'"$version"'"/' src/manifest.json | grep "[^ ]" > manifest.json  ## update version
+sed 's|src="js/jquery\.js"|src="js/jquery.min.js"|' src/index.html | sed 's|src="js/jquery\.mobile\.js"|src="js/jquery.mobile.min.js"|' | sed 's|src="js/main\.js"|src="js/main.min\.js"|' | sed 's|^.*src="js/jukax\.js".*$||' | sed 's|^.*src="js/KiiSDK\.js".*$||' | sed 's|^.*src="js/localForage\.js".*$||' | sed 's|href="css/jquery\.mobile\.css"|href="css/jquery.mobile.min.css"|'| sed 's/<meta itemprop="softwareVersion" content="trunk"/<meta itemprop="softwareVersion" content='"${version}"'/' | sed 's/<!--.*-->//g' | sed s"|http://lejenome.github.io|$website|" | grep "[^ ]" > app/index.html  ## use min versions of scripts and delete empty lines
+sed 's,updatecheck codebase.*$,updatecheck codebase="'"${website}${about_root}"'/app/jukax-'"$version"'.crx version='"$version"' />,' src/chrome-updates.xml | sed s"|http://lejenome.github.io|$website|" > chrome-updates.xml  ## update version
+sed 's/version": "[^"]*"/version": "'"$version"'"/' src/manifest.json | sed s"|http://lejenome.github.io|$website|" |grep "[^ ]" > manifest.json  ## update version
 sed 's/version": "[^"]*"/version": "'"$version"'"/' src/manifest.webapp | grep "[^ ]" > manifest.webapp  ##update version
 cp src/browserconfig.xml .
-sed 's|<!--version-->.*<!--/version-->|'"$version"'|g' website/index.html | sed 's|/jukax-about/|'"$about_root"'/|' | sed 's|/jukax/|'"$app_root"'/|' | grep "[^ ]" > website/index.html.new  ##update version
+sed 's|<!--version-->.*<!--/version-->|'"$version"'|g' website/index.html | sed 's|/jukax-about/|'"$about_root"'/|' | sed 's|/jukax/|'"$app_root"'/|' | grep "[^ ]" | sed s"|http://lejenome.github.io|$website|" > website/index.html.new  ##update version
 mv website/index.html.new website/index.html
 cat <<EOF > manifest.appcache
 CACHE MANIFEST
@@ -113,11 +112,11 @@ js/main.min.js
 css/jquery.mobile.min.css
 css/main.css
 css/images/ajax-loader.gif
-img/jukax-16x16.png
-img/jukax-32x32.png
-img/jukax-96x96.png
-img/jukax-160x160.png
-img/jukax-196x196.png
+img/jukax-icon-16x16.png
+img/jukax-icon-32x32.png
+img/jukax-icon-96x96.png
+img/jukax-icon-160x160.png
+img/jukax-icon-196x196.png
 
 NETWORK:
 https://api.kii.com/api

@@ -37,8 +37,8 @@
         <a href="http://lejenome.github.io/jukax">Launch</a>
         <br />Firefox App:
         <a href="https://marketplace.firefox.com/app/jukax">Marcketplace</a>or
-        <a href="#" id="firefoxPackagedAppInstall">Packaged Version</a>or
-        <a href="#" id="firefoxHostedAppInstall">Hosted Vesion</a>
+        <a href="#" id="ffpackaged">Packaged Version</a>or
+        <a href="#" id="ffhosted">Hosted Vesion</a>
         <br />Chrome Packaged App (Note: Download it and drap&drop it to extensions page):
         <a href="http://lejenome.github.io/jukax-about/app/jukax.crx">Download</a>
         <br />Android App:
@@ -53,11 +53,11 @@
     </div>
     <script>
         'use strict';
-        var firefoxHostedAppInstall = document.getElementById('firefoxHostedAppInstall');
+        var firefoxHostedAppInstall = document.getElementById('ffhosted');
         if (!navigator.mozApps) {
             firefoxHostedAppInstall.style.color = "#aaa";
         }
-        firefoxHostedAppInstall.addEventListener('onclick', function(e) {
+        firefoxHostedAppInstall.addEventListener('click', function(e) {
             var req = navigator.mozApps.install('http://lejenome.github.io/jukax/manifest.webapp');
             req.onsuccess = function() {
                 console.log(this.result.origin);
@@ -66,11 +66,11 @@
                 console.log(this.error.name);
             };
         }, false);
-        var firefoxPackagedAppInstall = document.getElementById('firefoxPackagedAppInstall');
+        var firefoxPackagedAppInstall = document.getElementById('ffpackaged');
         if (!navigator.mozApps) {
             firefoxPackagedAppInstall.style.color = "#aaa";
         }
-        firefoxPackagedAppInstall.addEventListener('onclick', function(e) {
+        firefoxPackagedAppInstall.addEventListener('click', function(e) {
             var req = navigator.mozApps.installPackage('http://lejenome.github.io/jukax/package.manifest');
             req.onsuccess = function() {
                 console.log(this.result.origin);
