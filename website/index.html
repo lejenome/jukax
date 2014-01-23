@@ -10,54 +10,80 @@
         padding:0;
         }
         body{
-            padding: 20px;
+            margin: auto;
+            padding: 10px 20px;
+            max-width:600px;
             background: #0092d8;
+            line-height:150%;
+            text-shadow: 1px 1px 1px rgba(0, 0, 255, 0.47);
             color:white;
         }
         #mainLogo{
+            display: block;
             margin: auto;
+            height: 300px;
+            width:  300px;
         }
     </style>
 </head>
 
 <body>
     <img src="img/jukax-transparent.png" id="mainLogo" />
-    <p>Jukax is a simple Calendar/To-Do app to manage all yours events and notes easily and ony platform</p>
+    <p>Jukax is a simple Calendar/To-Do app to manage all yours events and notes easily on any platform</p>
     <p>Jukax is completely
-        <a href="http://github.com/lejenome/jukax">Free and Open Source App</a>under
+        <a href="http://github.com/lejenome/jukax">Free and Open Source App</a>
+        under
         <a href="http://opensource.org/licenses/MIT">MIT licence</a>
     </p>
-    <p>Jukax runs on all moderns browsers, and as firefox and chrome application
-        <br/>also it runs on firefoxOs, android, iOS, ubuntu-Touch, Tizen,...</p>
-    <h2>Install Jukax (v
-        <!--version-->0.1.1
-        <!--/version-->) :</h2>
+    <p>Jukax runs on all moderns browsers and as firefox and chrome web application
+        <br/>Support for more platform is coming: android, iOS, ubuntu-Touch, Tizen,...</p>
+    <h2>
+
+    </h2>
     <div>
-        Online App from browser:
-        <a href="http://lejenome.github.io/jukax">Launch</a>
-        <br />Firefox App:
-        <a href="https://marketplace.firefox.com/app/jukax">Marcketplace</a>or
-        <a href="#" id="ffpackaged">Packaged Version</a>or
-        <a href="#" id="ffhosted">Hosted Vesion</a>
-        <br />Chrome Packaged App (Note: Download it and drap&drop it to extensions page):
-        <a href="http://lejenome.github.io/jukax-about/app/jukax.crx">Download</a>
-        <br />Android App:
-        <span>comming soon...</span>
-        <br />ubuntu-Touch App:
-        <span>comming soon...</span>
-        <br />Tizen App:
-        <span>comming soon...</span>
-        <br />iOS App:
-        <span>comming soon...</span>
-        <br />
+        <ul>
+            <h3>Get Jukax (v
+                <span id="version">0.0.0</span>)</h3>
+
+            <li>
+                <a href="http://lejenome.github.io/jukax">In-Browser</a>
+            </li>
+            <li>
+                Firefox web application:
+                <a href="https://marketplace.firefox.com/app/jukax">Marcketplace</a>
+                or
+                <a href="#" id="ffpackaged">Packaged Version</a>
+                or
+                <a href="#" id="ffhosted">Hosted Vesion</a>
+            </li>
+            <li>
+                Google chrome application (Note: Download it and drap&drop it to extensions page):
+                <a href="http://lejenome.github.io/jukax-about/app/jukax.crx">Download</a>
+            </li>
+            <li>
+                Android App:
+                <span>comming soon...</span>
+            </li>
+            <li>
+                ubuntu-Touch App:
+                <span>comming soon...</span>
+            </li>
+            <li>
+                Tizen App:
+                <span>comming soon...</span>
+            </li>
+            <li>
+                iOS App:
+                <span>comming soon...</span>
+            </li>
+        </ul>
     </div>
     <script>
         'use strict';
         var firefoxHostedAppInstall = document.getElementById('ffhosted');
-        if (!navigator.mozApps) {
-            firefoxHostedAppInstall.style.color = "#aaa";
-        }
-        firefoxHostedAppInstall.addEventListener('click', function(e) {
+        var firefoxPackagedAppInstall = document.getElementById('ffpackaged');
+        if (navigator.mozApps) {
+            firefoxHostedAppInstall.addEventListener('click', function(e) {
             var req = navigator.mozApps.install('http://lejenome.github.io/jukax/manifest.webapp');
             req.onsuccess = function() {
                 console.log(this.result.origin);
@@ -66,10 +92,6 @@
                 console.log(this.error.name);
             };
         }, false);
-        var firefoxPackagedAppInstall = document.getElementById('ffpackaged');
-        if (!navigator.mozApps) {
-            firefoxPackagedAppInstall.style.color = "#aaa";
-        }
         firefoxPackagedAppInstall.addEventListener('click', function(e) {
             var req = navigator.mozApps.installPackage('http://lejenome.github.io/jukax/package.manifest');
             req.onsuccess = function() {
@@ -79,6 +101,7 @@
                 console.log(this.error.name);
             };
         }, false);
+        }
     </script>
 </body>
 

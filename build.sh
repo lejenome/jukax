@@ -92,7 +92,7 @@ sed 's,updatecheck codebase.*$,updatecheck codebase="'"${website}${about_root}"'
 sed 's/version": "[^"]*"/version": "'"$version"'"/' src/manifest.json | sed s"|http://lejenome.github.io|$website|" |grep "[^ ]" > manifest.json  ## update version
 sed 's/version": "[^"]*"/version": "'"$version"'"/' src/manifest.webapp | grep "[^ ]" > manifest.webapp  ##update version
 cp src/browserconfig.xml .
-sed 's|<!--version-->.*<!--/version-->|'"$version"'|g' website/index.html | sed 's|/jukax-about/|'"$about_root"'/|' | sed 's|/jukax/|'"$app_root"'/|' | grep "[^ ]" | sed s"|http://lejenome.github.io|$website|" > website/index.html.new  ##update version
+sed 's|<span id="version">0.0.0</span>|<span id="version">'"$version"'</span>|g' website/index.html | sed 's|/jukax-about/|'"$about_root"'/|' | sed 's|/jukax/|'"$app_root"'/|' | grep "[^ ]" | sed s"|http://lejenome.github.io|$website|" > website/index.html.new  ##update version
 mv website/index.html.new website/index.html
 cat <<EOF > manifest.appcache
 CACHE MANIFEST
